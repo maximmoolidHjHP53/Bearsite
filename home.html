@@ -46,31 +46,34 @@
             left: 0; 
             width: 100vw; 
             height: 100vh; 
-            background: rgba(240, 242, 245, 0.85); 
-            z-index: 1000; 
+            background: rgba(0, 0, 0, 0.6); 
+            z-index: 9999; 
             align-items: center; 
             justify-content: center; 
-            padding: 20px; 
+            padding: 16px; 
+            overflow: hidden;
         }
         
         .modal-content, .friends-modal-content, .profile-modal-content, .options-modal-content, .logout-modal-content { 
             background: white; 
             width: 100%; 
-            max-width: 548px; 
+            max-width: 500px; 
             max-height: 85vh; 
-            border-radius: 8px; 
+            border-radius: 12px; 
             box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1); 
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
+            position: relative;
         }
 
         .options-modal-content, .logout-modal-content {
-            max-width: 400px;
+            max-width: 380px;
         }
         
         .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 18px; flex-shrink: 0; background: #fff; }
         .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        .modal-close-btn:hover { background: #d8dadf; }
         
         .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
         .modal-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -278,11 +281,11 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Copy Link
                 </div>
                 <div class="option-item danger" id="delete-post-option-item" style="display: none;" onclick="deleteCurrentPost()">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Post
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Post
                 </div>
             </div>
         </div>
-      </div>
+    </div>
 
     <!-- Logout Settings Modal -->
     <div id="logout-modal" class="modal-overlay" onclick="if(event.target === this) closeLogoutModal()">
@@ -514,7 +517,7 @@
                 `;
             }
 
-          const postsContainer = document.getElementById('profile-modal-posts');
+            const postsContainer = document.getElementById('profile-modal-posts');
             const userPosts = postsCache.filter(p => p.userId === userId);
             renderProfilePosts(userPosts, postsContainer);
 
@@ -568,7 +571,7 @@
             }
         }
 
-        function closeProfileModal() {
+      function closeProfileModal() {
             document.getElementById('user-profile-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
@@ -596,7 +599,7 @@
                 showToast('An error occurred.', 'danger');
             }
         }
-
+        
         function openPostOptions(postId, userId) {
             activeOptionsPost = postsCache.find(p => p._id === postId);
             const deleteOption = document.getElementById('delete-post-option-item');
@@ -668,7 +671,7 @@
             }
 
             if (images.length > 4) {
-                showToast('You can only select up to 4 picture.', 'danger');
+                showToast('You can only select up to 4 pictures.', 'danger');
                 return;
             }
 
@@ -754,7 +757,7 @@
             }
         }
 
-      async function loadPosts() {
+        async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
                 const data = await res.json();
@@ -809,7 +812,7 @@
                             });
                         }
 
-                        commentsHtml += `
+                      commentsHtml += `
                             <div class="comment-item">
                                 <img src="${comment.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
                                 <div style="flex:1;">
@@ -831,8 +834,8 @@
                         `;
                     });
                 }
-           
-           const postCard = document.createElement('div');
+
+                const postCard = document.createElement('div');
                 postCard.className = 'feed-post';
                 postCard.innerHTML = `
                     <div class="post-header">
@@ -957,8 +960,7 @@
                     </div>
                 </div>
             `;
-
-          commentsList.appendChild(commentDiv);
+            commentsList.appendChild(commentDiv);
 
             const countSpan = document.querySelector(`[id='comment-count-${postId}']`);
             if (countSpan) countSpan.textContent = post.comments.length;
@@ -1042,7 +1044,8 @@
                 showToast('Failed to post reply.', 'danger');
             }
         }
-   window.addEventListener('keydown', (e) => {
+
+        window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closePostModal();
                 closeCollabModal();
@@ -1056,4 +1059,3 @@
     </script>
 </body>
 </html>
-        
