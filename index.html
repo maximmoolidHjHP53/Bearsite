@@ -3,88 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaClone - Share Your Moments</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>InstaClone - Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            text-align: center;
+            width: 320px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-family: cursive;
+            font-size: 38px;
+            margin-bottom: 10px;
+            color: #262626;
+        }
+        p {
+            color: #8e8e8e;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: #fafafa;
+            font-size: 14px;
+        }
+        input:focus {
+            border-color: #a8a8a8;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #1877f2;
+        }
+        #responseMessage {
+            margin-top: 15px;
+            font-size: 13px;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+<body>
 
-    <!-- Navigation Bar -->
-    <header class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div class="text-2xl font-bold tracking-tight text-pink-600">InstaClone</div>
-        <div class="space-x-4">
-            <a href="#login" class="text-sm font-semibold text-gray-600 hover:text-gray-900">Log In</a>
-            <a href="#signup" class="bg-pink-600 text-sm font-semibold text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition">Sign Up</a>
-        </div>
-    </header>
+    <div class="card">
+        <h1>InstaClone</h1>
+        <p>Sign up to see photos and videos from your friends.</p>
+        
+        <form id="signupForm">
+            <input type="email" id="emailInput" placeholder="Enter your email address" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        
+        <div id="responseMessage"></div>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="max-w-6xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        <div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-6">
-                Capture and share the world's moments.
-            </h1>
-            <p class="text-lg text-gray-600 mb-8">
-                Connect with friends, share your photos and videos, and discover a community that shares your passions in real-time.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <a href="#signup" class="bg-pink-600 text-center font-semibold text-white px-6 py-3 rounded-xl shadow-lg hover:bg-pink-700 transition">Get Started Free</a>
-                <a href="#features" class="border border-gray-300 text-center font-semibold text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-100 transition">Learn More</a>
-            </div>
-        </div>
+    <script>
+        const form = document.getElementById('signupForm');
+        const messageDiv = document.getElementById('responseMessage');
 
-        <!-- Visual App Preview Mockup -->
-        <div class="bg-gradient-to-tr from-pink-500 to-purple-600 p-2 rounded-3xl shadow-2xl max-w-sm mx-auto w-full">
-            <div class="bg-white rounded-2xl p-4 space-y-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
-                    <div>
-                        <div class="h-3 bg-gray-300 rounded w-24"></div>
-                        <div class="h-2 bg-gray-200 rounded w-16 mt-1"></div>
-                    </div>
-                </div>
-                <div class="h-64 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 font-medium">
-                    [Photo / Video Feed]
-                </div>
-                <div class="space-y-2">
-                    <div class="h-3 bg-gray-300 rounded w-3/4"></div>
-                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-            </div>
-        </div>
-    </section>
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
 
-    <!-- Features Section -->
-    <section id="features" class="bg-white py-20 border-t border-gray-100">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-4">Built for Speed and Style</h2>
-            <p class="text-gray-600 max-w-2xl mx-auto mb-16">Everything you need to run a high-performance media sharing social network.</p>
+            messageDiv.style.color = '#8e8e8e';
+            messageDiv.textContent = 'Submitting...';
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-xl flex items-center justify-center font-bold text-xl mb-4">⚡</div>
-                    <h3 class="font-bold text-xl mb-2">Zero Lag Uploads</h3>
-                    <p class="text-gray-600 text-sm">Optimized storage pipeline ensuring instant image and video loading worldwide.</p>
-                </div>
-                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center font-bold text-xl mb-4">💬</div>
-                    <h3 class="font-bold text-xl mb-2">Real-Time Interaction</h3>
-                    <p class="text-gray-600 text-sm">Like, comment, and follow friends instantly with real-time database updates.</p>
-                </div>
-                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold text-xl mb-4">🔒</div>
-                    <h3 class="font-bold text-xl mb-2">Secure Profiles</h3>
-                    <p class="text-gray-600 text-sm">Robust user authentication protecting your personal account data and privacy.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+            try {
+                const response = await fetch('http://localhost:3000/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
 
-    <!-- Footer -->
-    <footer class="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-gray-500 border-t border-gray-100">
-        &copy; 2026 InstaClone. All rights reserved.
-    </footer>
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.style.color = '#0095f6';
+                    messageDiv.textContent = 'Success! Welcome aboard.';
+                    form.reset();
+                } else {
+                    messageDiv.style.color = '#ed4956';
+                    messageDiv.textContent = 'Error: ' + data.error;
+                }
+            } catch (error) {
+                messageDiv.style.color = '#ed4956';
+                messageDiv.textContent = 'Failed to connect to backend server.';
+            }
+        });
+    </script>
 
 </body>
 </html>
-
