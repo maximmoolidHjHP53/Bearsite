@@ -25,14 +25,26 @@
         <h1>InstaClone</h1>
         <p id="subtitle">Sign up to see photos and videos from your friends.</p>
         
-        <!-- Registration Form -->
-        <form id="registerForm">
-            <input type="text" id="regUsername" placeholder="Username (min 3 chars)" required>
-            <input type="email" id="regEmail" placeholder="Email address" required>
+        <!-- Registration Step 1: Email & Password -->
+        <form id="regStep1Form">
+            <input type="email" id="regEmail" placeholder="Mobile number or email" required>
             <input type="password" id="regPassword" placeholder="Password (min 6 chars)" required>
-            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-            <button type="submit">Sign Up</button>
+            <button type="submit">Next</button>
             <div class="switch-text">Have an account? <a onclick="switchView('login')">Log in</a></div>
+        </form>
+
+        <!-- Registration Step 2: Gmail Verification Code -->
+        <form id="regStep2Form" class="hidden">
+            <input type="text" id="regCode" placeholder="Enter 6-digit confirmation code" required>
+            <button type="submit">Confirm Code</button>
+        </form>
+
+        <!-- Registration Step 3: Username & Birthday -->
+        <form id="regStep3Form" class="hidden">
+            <input type="text" id="regUsername" placeholder="Create Username (min 3 chars)" required>
+            <p style="font-size:12px; margin:0 0 5px 0; text-align:left; color:#8e8e8e;">Birthday Date:</p>
+            <input type="date" id="regBirthday" required>
+            <button type="submit">Complete Sign Up</button>
         </form>
 
         <!-- Login Step 1: Email & Password -->
@@ -44,8 +56,8 @@
         </form>
 
         <!-- Login Step 2: Gmail Verification Code -->
-        <form id="codeForm" class="hidden">
-            <input type="text" id="codeInput" placeholder="Enter 6-digit Gmail code" required>
+        <form id="loginCodeForm" class="hidden">
+            <input type="text" id="loginCode" placeholder="Enter 6-digit Gmail code" required>
             <button type="submit">Verify & Log In</button>
         </form>
         
@@ -54,69 +66,99 @@
 
     <script>
         let userEmail = '';
-        const registerForm = document.getElementById('registerForm');
+        
+        const regStep1Form = document.getElementById('regStep1Form');
+        const regStep2Form = document.getElementById('regStep2Form');
+        const regStep3Form = document.getElementById('regStep3Form');
         const loginForm = document.getElementById('loginForm');
-        const codeForm = document.getElementById('codeForm');
+        const loginCodeForm = document.getElementById('loginCodeForm');
+        
         const subtitle = document.getElementById('subtitle');
         const message = document.getElementById('message');
 
         function switchView(view) {
             message.textContent = '';
-            registerForm.classList.add('hidden');
+            regStep1Form.classList.add('hidden');
+            regStep2Form.classList.add('hidden');
+            regStep3Form.classList.add('hidden');
             loginForm.classList.add('hidden');
-            codeForm.classList.add('hidden');
+            loginCodeForm.classList.add('hidden');
 
-            if (view === 'login') {
+            if (view === 'register') {
+                regStep1Form.classList.remove('hidden');
+                subtitle.textContent = 'Sign up to see photos and videos from your friends.';
+            } else if (view === 'reg-code') {
+                regStep2Form.classList.remove('hidden');
+                subtitle.textContent = 'Enter the code sent to your Gmail.';
+            } else if (view === 'reg-profile') {
+                regStep3Form.classList.remove('hidden');
+                subtitle.textContent = 'Add your username and birthday.';
+            } else if (view === 'login') {
                 loginForm.classList.remove('hidden');
                 subtitle.textContent = 'Log in with your credentials.';
-            } else if (view === 'register') {
-                registerForm.classList.remove('hidden');
-                subtitle.textContent = 'Sign up to see photos and videos from your friends.';
-            } else if (view === 'code') {
-                codeForm.classList.remove('hidden');
+            } else if (view === 'login-code') {
+                loginCodeForm.classList.remove('hidden');
                 subtitle.textContent = 'Enter the code sent to your Gmail.';
             }
         }
 
-        // 1. Handle Registration with Security Checks
-        registerForm.addEventListener('submit', async (e) => {
+        // 1. Register Step 1
+        regStep1Form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
+            userEmail = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
 
-            if (username.length < 3) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Username is too short (minimum 3 characters).';
-                return;
-            }
             if (password.length < 6) {
                 message.style.color = '#ed4956';
-                message.textContent = '⚠️ Password is too short (minimum 6 characters).';
-                return;
-            }
-            if (password !== confirmPassword) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Passwords do not match!';
+                message.textContent = '⚠️ Password must be at least 6 characters.';
                 return;
             }
 
             message.style.color = '#8e8e8e';
-            message.textContent = 'Creating account...';
+            message.textContent = 'Connecting & sending code (Render server may take a moment)...';
 
             try {
-                const res = await fetch('/api/register', {
+                const res = await fetch('/api/register-step1', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password })
+                    body: JSON.stringify({ email: userEmail, password })
                 });
                 const data = await res.json();
 
                 if (data.success) {
                     message.style.color = '#0095f6';
-                    message.textContent = 'Success! Account created. Please log in.';
-                    setTimeout(() => switchView('login'), 1500);
+                    message.textContent = 'Code sent to your Gmail!';
+                    switchView('reg-code');
+                } else {
+                    message.style.color = '#ed4956';
+                    message.textContent = '⚠️ ' + data.error;
+                }
+            } catch (err) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Server connection error. Try clicking again.';
+            }
+        });
+
+        // 2. Register Step 2 (Verify Code)
+        regStep2Form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('regCode').value.trim();
+
+            message.style.color = '#8e8e8e';
+            message.textContent = 'Verifying code...';
+
+            try {
+                const res = await fetch('/api/register-step2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, code })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    message.style.color = '#0095f6';
+                    message.textContent = 'Code verified! Set up your profile.';
+                    switchView('reg-profile');
                 } else {
                     message.style.color = '#ed4956';
                     message.textContent = '⚠️ ' + data.error;
@@ -127,7 +169,44 @@
             }
         });
 
-        // 2. Handle Login Step 1 (Password check + trigger email code)
+        // 3. Register Step 3 (Username & Birthday)
+        regStep3Form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const birthday = document.getElementById('regBirthday').value;
+
+            if (username.length < 3) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Username must be at least 3 characters.';
+                return;
+            }
+
+            message.style.color = '#8e8e8e';
+            message.textContent = 'Creating account...';
+
+            try {
+                const res = await fetch('/api/register-step3', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, username, birthday })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    message.style.color = '#0095f6';
+                    message.textContent = '🎉 Account created successfully! Please log in.';
+                    setTimeout(() => switchView('login'), 2000);
+                } else {
+                    message.style.color = '#ed4956';
+                    message.textContent = '⚠️ ' + data.error;
+                }
+            } catch (err) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Server connection error.';
+            }
+        });
+
+        // 4. Login Step 1
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             userEmail = document.getElementById('loginEmail').value.trim();
@@ -147,7 +226,7 @@
                 if (data.success) {
                     message.style.color = '#0095f6';
                     message.textContent = 'Code sent to Gmail!';
-                    switchView('code');
+                    switchView('login-code');
                 } else {
                     message.style.color = '#ed4956';
                     message.textContent = '⚠️ ' + data.error;
@@ -158,10 +237,10 @@
             }
         });
 
-        // 3. Handle Login Step 2 (Verify Gmail Code)
-        codeForm.addEventListener('submit', async (e) => {
+        // 5. Login Step 2
+        loginCodeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const code = document.getElementById('codeInput').value.trim();
+            const code = document.getElementById('loginCode').value.trim();
 
             message.style.color = '#8e8e8e';
             message.textContent = 'Verifying code...';
@@ -189,3 +268,4 @@
     </script>
 </body>
 </html>
+

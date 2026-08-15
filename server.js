@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Serve static frontend files (like index.html) from the root directory
+// Serve static frontend files from root directory
 app.use(express.static(path.join(__dirname)));
 
 // Configure Gmail Transporter
@@ -44,48 +44,107 @@ async function startServer() {
 
 startServer();
 
-// 1. Register Endpoint (High security validation & password hashing)
-app.post('/api/register', async (req, res) => {
-  const { username, email, password } = req.body;
+// --- REGISTRATION FLOW ---
 
-  if (!username || username.length < 3) {
-    return res.status(400).json({ success: false, error: 'Username must be at least 3 characters long.' });
-  }
-  if (!password || password.length < 6) {
-    return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long.' });
+// Register Step 1: Email & Password -> Sends Gmail Code
+app.post('/api/register-step1', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password || password.length < 6) {
+    return res.status(400).json({ success: false, error: 'Email and password (min 6 chars) are required.' });
   }
 
   try {
-    const existingUser = await usersCollection.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(400).json({ success: false, error: 'Email or Username is already taken.' });
+    const existingUser = await usersCollection.findOne({ email });
+    if (existingUser && existingUser.isVerified) {
+      return res.status(400).json({ success: false, error: 'Email is already registered. Please log in.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const newUser = {
-      username,
-      email,
-      password: hashedPassword,
-      code: null,
-      createdAt: new Date()
-    };
+    if (existingUser) {
+      await usersCollection.updateOne({ email }, { $set: { password: hashedPassword, code } });
+    } else {
+      await usersCollection.insertOne({
+        email,
+        password: hashedPassword,
+        code,
+        isVerified: false,
+        username: null,
+        birthday: null,
+        createdAt: new Date()
+      });
+    }
 
-    await usersCollection.insertOne(newUser);
-    res.status(201).json({ success: true, message: 'Account created successfully!' });
+    await transporter.sendMail({
+      from: 'airmountcompany@gmail.com',
+      to: email,
+      subject: 'Your InstaClone Verification Code',
+      text: `Your registration verification code is: ${code}`
+    });
+
+    res.json({ success: true, message: 'Verification code sent to your Gmail!' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 2. Login Step 1: Verify Password & Send Gmail Code
+// Register Step 2: Verify Code
+app.post('/api/register-step2', async (req, res) => {
+  const { email, code } = req.body;
+
+  try {
+    const user = await usersCollection.findOne({ email });
+    if (user && user.code === code) {
+      res.json({ success: true, message: 'Code verified successfully!' });
+    } else {
+      res.status(400).json({ success: false, error: 'Invalid verification code.' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Register Step 3: Create Username & Birthday
+app.post('/api/register-step3', async (req, res) => {
+  const { email, username, birthday } = req.body;
+
+  if (!username || username.length < 3) {
+    return res.status(400).json({ success: false, error: 'Username must be at least 3 characters long.' });
+  }
+  if (!birthday) {
+    return res.status(400).json({ success: false, error: 'Please provide your birthday.' });
+  }
+
+  try {
+    const existingUsername = await usersCollection.findOne({ username, isVerified: true });
+    if (existingUsername) {
+      return res.status(400).json({ success: false, error: 'Username is already taken.' });
+    }
+
+    await usersCollection.updateOne(
+      { email },
+      { $set: { username, birthday, isVerified: true, code: null } }
+    );
+
+    res.status(201).json({ success: true, message: 'Account fully created successfully!' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+// --- LOGIN FLOW ---
+
+// Login Step 1: Verify Password & Send Code
 app.post('/api/login-step1', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await usersCollection.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ success: false, error: 'User not found. Please register first.' });
+    if (!user || !user.isVerified) {
+      return res.status(400).json({ success: false, error: 'User not found or not verified. Please register first.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -93,13 +152,9 @@ app.post('/api/login-step1', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Incorrect password. Please try again.' });
     }
 
-    // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Save code to user document
     await usersCollection.updateOne({ email }, { $set: { code } });
 
-    // Send code via Gmail
     await transporter.sendMail({
       from: 'airmountcompany@gmail.com',
       to: email,
@@ -113,7 +168,7 @@ app.post('/api/login-step1', async (req, res) => {
   }
 });
 
-// 3. Login Step 2: Verify Gmail Code
+// Login Step 2: Verify Code
 app.post('/api/login-step2', async (req, res) => {
   const { email, code } = req.body;
 
@@ -129,3 +184,4 @@ app.post('/api/login-step2', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
