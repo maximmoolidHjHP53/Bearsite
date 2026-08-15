@@ -31,7 +31,7 @@ if (!uri) {
 }
 
 const client = new MongoClient(uri);
-let db, usersCollection, postsCollection;
+let db, usersCollection, postsCollection, notificationsCollection;
 
 // --- PASSPORT SERIALIZATION ---
 passport.serializeUser((user, done) => {
@@ -165,6 +165,18 @@ app.post('/api/posts', async (req, res) => {
       if (collabUser) {
         collabWithId = collabUser._id;
         collabWithName = collabUser.username;
+
+        // Optionally send notification for collab invite
+        await notificationsCollection.insertOne({
+          userId: collabUser._id,
+          senderId: req.user._id,
+          senderName: req.user.username,
+          senderProfilePic: req.user.profilePicture,
+          type: 'collab_invite',
+          message: 'invited you to collaborate on a post.',
+          read: false,
+          createdAt: new Date()
+        });
       }
     } catch (e) {
       // Invalid ObjectId or user not found, skip
@@ -193,6 +205,28 @@ app.post('/api/posts', async (req, res) => {
   const result = await postsCollection.insertOne(newPost);
   const createdPost = await postsCollection.findOne({ _id: result.insertedId });
   res.json({ success: true, post: createdPost });
+});
+
+// Delete Post Route
+app.delete('/api/posts/:id', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const postId = new ObjectId(req.params.id);
+    const post = await postsCollection.findOne({ _id: postId });
+    
+    if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
+
+    if (post.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    await postsCollection.deleteOne({ _id: postId });
+    await notificationsCollection.deleteMany({ postId: postId });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error deleting post' });
+  }
 });
 
 // Like / Unlike Post
@@ -271,6 +305,104 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
   }
 });
 
+// --- NOTIFICATIONS ROUTES ---
+app.get('/api/notifications', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const notifications = await notificationsCollection
+      .find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.json({ success: true, notifications });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching notifications' });
+  }
+});
+
+app.post('/api/notifications/:id/read', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const notifId = new ObjectId(req.params.id);
+    await notificationsCollection.updateOne(
+      { _id: notifId, userId: req.user._id },
+      { $set: { read: true } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// --- FRIEND REQUEST RESPONSE ROUTES ---
+app.post('/api/friends/accept', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const { userId } = req.body;
+    const senderObjectId = new ObjectId(userId);
+
+    await usersCollection.updateOne(
+      { _id: req.user._id },
+      { $addToSet: { friends: senderObjectId } }
+    );
+    await usersCollection.updateOne(
+      { _id: senderObjectId },
+      { $addToSet: { friends: req.user._id } }
+    );
+
+    await notificationsCollection.deleteMany({
+      userId: req.user._id,
+      senderId: senderObjectId,
+      type: 'friend_request'
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error accepting friend request' });
+  }
+});
+
+app.post('/api/friends/decline', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const { userId } = req.body;
+    const senderObjectId = new ObjectId(userId);
+
+    await notificationsCollection.deleteMany({
+      userId: req.user._id,
+      senderId: senderObjectId,
+      type: 'friend_request'
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error declining friend request' });
+  }
+});
+
+// --- COLLAB RESPONSE ROUTE ---
+app.post('/api/posts/:postId/collab-response', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const postId = new ObjectId(req.params.postId);
+    const { action } = req.body;
+
+    await postsCollection.updateOne(
+      { _id: postId },
+      { $set: { collabStatus: action === 'accept' ? 'accepted' : 'declined' } }
+    );
+
+    await notificationsCollection.deleteMany({
+      userId: req.user._id,
+      postId: postId,
+      type: 'collab_invite'
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error handling collab response' });
+  }
+});
+
 app.get('/auth/logout', (req, res) => {
   req.logout(() => {
     res.redirect('/');
@@ -283,6 +415,7 @@ async function startServer() {
     db = client.db("instaclone");
     usersCollection = db.collection("users");
     postsCollection = db.collection("posts");
+    notificationsCollection = db.collection("notifications");
     console.log("Connected to MongoDB Atlas & ready!");
 
     const PORT = process.env.PORT || 3000;
