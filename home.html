@@ -23,8 +23,10 @@
         .logo { font-family: cursive; font-size: 28px; color: #262626; font-weight: bold; }
         .user-nav { display: flex; align-items: center; gap: 10px; }
         .user-nav img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-        .nav-icon-btn { background: #f0f2f5; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #050505; text-decoration: none; transition: background 0.2s; }
+        .nav-icon-wrapper { position: relative; display: inline-flex; }
+        .nav-icon-btn { background: #f0f2f5; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #050505; text-decoration: none; transition: background 0.2s; position: relative; }
         .nav-icon-btn:hover { background: #e4e6eb; }
+        .notif-badge { position: absolute; top: -2px; right: -2px; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid white; display: none; }
         .logout-btn { background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; color: #050505; font-size: 14px; }
 
         /* Container */
@@ -46,7 +48,7 @@
         .modal-body { padding: 16px; max-height: 70vh; overflow-y: auto; }
         .modal-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .modal-user-row img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .modal-textarea { width: 100%; border: none; outline: none; font-size: 16px; resize: none; font-family: inherit; -webkit-user-select: text; user-select: text; }
+        .modal-textarea { width: 100%; border: none; outline: none; font-size: 16px; resize: none; font-family: inherit; }
 
         #modal-media-preview { margin-top: 10px; position: relative; max-height: 280px; overflow: hidden; border-radius: 8px; display: none; background: #000; }
         
@@ -102,7 +104,7 @@
         .post-options-trigger { background: none; border: none; cursor: pointer; padding: 6px; color: #65676b; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .post-options-trigger:hover { background: #f0f2f5; }
         
-        .post-body { font-size: 15px; margin-bottom: 10px; line-height: 1.5; white-space: pre-wrap; -webkit-user-select: text; user-select: text; }
+        .post-body { font-size: 15px; margin-bottom: 10px; line-height: 1.5; white-space: pre-wrap; }
         
         /* Post Media Grid */
         .post-media-grid { display: grid; gap: 3px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: #000; max-height: 450px; width: 100%; }
@@ -127,13 +129,13 @@
         .comment-input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
         .comment-input-row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .input-with-btn { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 20px; padding-right: 8px; }
-        .input-with-btn input { flex: 1; background: none; border: none; padding: 8px 12px; outline: none; font-size: 14px; -webkit-user-select: text; user-select: text; }
+        .input-with-btn input { flex: 1; background: none; border: none; padding: 8px 12px; outline: none; font-size: 14px; }
         .send-btn { background: none; border: none; color: #1877f2; font-weight: bold; cursor: pointer; font-size: 14px; padding: 4px 8px; }
         .send-btn:hover { opacity: 0.8; }
         
         .comment-item { display: flex; gap: 8px; margin-bottom: 8px; font-size: 14px; }
         .comment-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-        .comment-bubble { background: #f0f2f5; padding: 8px 12px; border-radius: 18px; max-width: 85%; -webkit-user-select: text; user-select: text; }
+        .comment-bubble { background: #f0f2f5; padding: 8px 12px; border-radius: 18px; max-width: 85%; }
         .comment-author { font-weight: bold; font-size: 13px; }
         .reply-btn { background: none; border: none; color: #65676b; font-size: 12px; font-weight: bold; cursor: pointer; padding: 2px 5px; margin-top: 2px; }
         .reply-btn:hover { text-decoration: underline; }
@@ -145,22 +147,43 @@
         .reply-input-box { display: none; margin-left: 40px; margin-bottom: 8px; align-items: center; gap: 6px; }
         .reply-input-box img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .reply-input-wrapper { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 15px; padding-right: 6px; }
-        .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; -webkit-user-select: text; user-select: text; }
+        .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; }
 
-        /* Options Action Sheet Modal */
-        .options-modal-content { background: white; width: 100%; max-width: 320px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; padding: 8px 0; }
-        .option-item { padding: 12px 16px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: #050505; }
+        /* Options Action Sheet Modal (Proper Popup / Bottom Sheet Style) */
+        #post-options-modal { align-items: flex-end; }
+        @media(min-width: 500px) {
+            #post-options-modal { align-items: center; }
+        }
+        .options-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 12px 12px 0 0; box-shadow: 0 -4px 16px rgba(0,0,0,0.15); overflow: hidden; padding: 8px 0; animation: slideUp 0.25s ease-out; }
+        @media(min-width: 500px) {
+            .options-modal-content { border-radius: 12px; animation: fadeIn 0.2s ease-out; }
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .option-item { padding: 14px 20px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #050505; transition: background 0.15s; }
         .option-item:hover { background: #f0f2f5; }
         .option-item.danger { color: #e41e3f; }
 
+        /* Custom Popup Toast Alert Notification */
+        #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; align-items: center; }
+        .toast-alert { background: #242526; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 10px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: auto; }
+        .toast-alert.success { background: #1877f2; }
+        .toast-alert.danger { background: #e41e3f; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
+
         /* Loading Popup Overlay */
-        #loading-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
         .loading-box { background: white; padding: 24px 32px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-weight: bold; font-size: 16px; color: #262626; display: flex; align-items: center; gap: 12px; }
         .spinner { width: 20px; height: 20px; border: 3px solid #dbdbdb; border-top: 3px solid #1877f2; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+    <!-- Custom Toast Alert Container -->
+    <div id="toast-container"></div>
 
     <!-- Loading Popup Overlay -->
     <div id="loading-overlay">
@@ -233,21 +256,17 @@
                 <img id="profile-modal-pic" src="" alt="Profile">
                 <h3 id="profile-modal-name"></h3>
                 <p id="profile-modal-meta"></p>
-                <div class="profile-action-btns" id="profile-action-btns-container">
-                    <!-- Add/Decline buttons rendered dynamically -->
-                </div>
+                <div class="profile-action-btns" id="profile-action-btns-container"></div>
             </div>
-            <div class="profile-posts-scroll" id="profile-modal-posts">
-                <!-- User posts list displayed here -->
-            </div>
+            <div class="profile-posts-scroll" id="profile-modal-posts"></div>
         </div>
     </div>
 
     <!-- Post Options (3-Dots) Modal -->
-    <div id="post-options-modal" class="modal-overlay">
+    <div id="post-options-modal" class="modal-overlay" onclick="if(event.target === this) closePostOptionsModal()">
         <div class="options-modal-content">
             <div class="option-item" onclick="copyPostLink()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 75.29l3.54 3.54a5 5 0 0 1-7.07 7.07l-1.41-1.41"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3.54-3.54a5 5 0 1 1 7.07-7.07l1.41 1.41"></path></svg> Copy link
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3.54-3.54a5 5 0 0 0-7.07-7.07l-1.41-1.41"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3.54-3.54a5 5 0 1 1 7.07-7.07l1.41 1.41"></path></svg> Copy link
             </div>
             <div class="option-item danger" id="delete-post-option" onclick="deleteCurrentPost()" style="display: none;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete post
@@ -270,8 +289,8 @@
                 <img id="feed-creator-pic" src="" alt="User">
                 <div class="fake-input" id="fake-input-text">What's on your mind?</div>
             </div>
-          </div>
-
+        </div>
+        
         <!-- Feed Stream -->
         <div id="feed-container"></div>
     </div>
@@ -282,6 +301,22 @@
         let selectedCollabFriend = null;
         let postsCache = [];
         let activeOptionsPost = null;
+
+        // Custom Animated Popup Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-alert ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.25s ease-in forwards';
+                setTimeout(() => toast.remove(), 250);
+            }, 3000);
+        }
 
         async function initPage() {
             const loadingOverlay = document.getElementById('loading-overlay');
@@ -302,17 +337,47 @@
                 document.getElementById('user-nav').innerHTML = `
                     <img src="${currentUser.profilePicture || 'https://via.placeholder.com/36'}" alt="Profile">
                     <span style="font-weight: bold; font-size: 14px;">${currentUser.username}</span>
-                    <a href="/notification.html" class="nav-icon-btn" title="Notifications">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    </a>
+                    <div class="nav-icon-wrapper">
+                        <a href="/notification.html" class="nav-icon-btn" id="notif-btn" title="Notifications" onclick="clearNotificationBadge()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            <span class="notif-badge" id="notif-badge-count">0</span>
+                        </a>
+                    </div>
                     <a href="/auth/logout" class="logout-btn">Logout</a>
                 `;
+
+                await fetchNotificationsCount();
                 await loadPosts();
             } catch (err) {
                 console.error("Initialization error", err);
             } finally {
                 loadingOverlay.style.display = 'none';
             }
+        }
+
+        async function fetchNotificationsCount() {
+            try {
+                const res = await fetch('/api/notifications/count');
+                const data = await res.json();
+                if (data.success && data.count > 0) {
+                    const badge = document.getElementById('notif-badge-count');
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = 'inline-block';
+                }
+            } catch (err) {
+                // Fallback or silent catch if endpoint is structured differently
+                console.log("Notification count fetch handled");
+            }
+        }
+
+        function clearNotificationBadge() {
+            const badge = document.getElementById('notif-badge-count');
+            if (badge) {
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
+            // Mark notifications as read in backend if route exists
+            fetch('/api/notifications/read', { method: 'POST' }).catch(() => {});
         }
 
         function openPostModal() {
@@ -331,7 +396,6 @@
             const container = document.getElementById('friends-list-container');
             container.innerHTML = '<div style="padding: 12px; text-align: center; color: #65676b; font-size: 13px;">Loading friends...</div>';
             friendsModal.style.display = 'flex';
-
             try {
                 const res = await fetch('/api/friends');
                 const data = await res.json();
@@ -380,7 +444,7 @@
             
             const btnContainer = document.getElementById('profile-action-btns-container');
             if (userId === currentUser._id) {
-                btnContainer.innerHTML = ''; // Don't show add friend for self
+                btnContainer.innerHTML = '';
             } else {
                 btnContainer.innerHTML = `
                     <button class="btn-add-friend" onclick="handleFriendAction('${userId}', 'add')">
@@ -394,7 +458,6 @@
             postsContainer.innerHTML = '<div style="text-align: center; color: #65676b; padding: 20px;">Loading posts...</div>';
             modal.style.display = 'flex';
 
-            // Filter all posts by this user
             const userPosts = postsCache.filter(p => p.userId === userId);
             if (userPosts.length > 0) {
                 postsContainer.innerHTML = '';
@@ -445,7 +508,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert(action === 'add' ? 'Friend request sent!' : 'Friend request declined.');
+                    showToast(action === 'add' ? 'Friend request sent!' : 'Friend request declined.', 'success');
                 }
             } catch (err) {
                 console.error("Error handling friend action", err);
@@ -457,7 +520,6 @@
             activeOptionsPost = postsCache.find(p => p._id === postId);
             const deleteOption = document.getElementById('delete-post-option');
             
-            // Show delete option if current user is owner
             if (activeOptionsPost && (activeOptionsPost.userId === currentUser._id || userId === currentUser._id)) {
                 deleteOption.style.display = 'flex';
             } else {
@@ -475,31 +537,42 @@
             if (!activeOptionsPost) return;
             const postUrl = `${window.location.origin}/post/${activeOptionsPost._id}`;
             navigator.clipboard.writeText(postUrl).then(() => {
-                alert('Post link copied to clipboard!');
+                showToast('Post link copied to clipboard!', 'success');
                 closePostOptionsModal();
             }).catch(err => {
                 console.error('Failed to copy link', err);
             });
         }
 
+        // Delete Post with Loading Animation & Complete Database Deletion
         async function deleteCurrentPost() {
             if (!activeOptionsPost) return;
-            if (!confirm('Are you sure you want to delete this post?')) return;
+            closePostOptionsModal();
+
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingText.textContent = 'Deleting post from database...';
+            loadingOverlay.style.display = 'flex';
 
             const postId = activeOptionsPost._id;
             try {
                 const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
                 const data = await res.json();
+                
+                // Read and verify deletion success in database
                 if (data.success || res.ok) {
-                    postsCache = postsCache.filter(p => p._id !== postId);
-                    renderFeed(postsCache);
-                    closePostOptionsModal();
+                    showToast('Post deleted successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 800);
                 } else {
-                    alert('Failed to delete post.');
+                    loadingOverlay.style.display = 'none';
+                    showToast('Failed to delete post.', 'danger');
                 }
             } catch (err) {
                 console.error('Error deleting post', err);
-                alert('An error occurred while deleting the post.');
+                loadingOverlay.style.display = 'none';
+                showToast('An error occurred while deleting the post.', 'danger');
             }
         }
 
@@ -510,12 +583,12 @@
 
             const images = files.filter(f => f.type.startsWith('image'));
             if (images.length === 0) {
-                alert('Only image files are allowed.');
+                showToast('Only image files are allowed.', 'danger');
                 return;
             }
 
             if (images.length > 4) {
-                alert('You can only select up to 4 pictures.');
+                showToast('You can only select up to 4 pictures.', 'danger');
                 return;
             }
 
@@ -535,12 +608,11 @@
             });
         });
 
-        function renderModalPreview() {
+      function renderModalPreview() {
             const previewDiv = document.getElementById('modal-media-preview');
             previewDiv.style.display = 'block';
             
             let html = `<button onclick="clearModalMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button>`;
-            
             const count = selectedMediaFiles.length;
             html += `<div class="preview-grid grid-${count}">`;
             selectedMediaFiles.forEach(file => {
@@ -603,7 +675,7 @@
             }
         }
 
-      async function loadPosts() {
+        async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
                 const data = await res.json();
@@ -623,7 +695,6 @@
             posts.forEach(post => {
                 const isLiked = post.likes && post.likes.includes(currentUser._id);
                 const likeCount = post.likes ? post.likes.length : 0;
-                
                 let mediaHtml = '';
                 const urls = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : (post.mediaUrl ? [post.mediaUrl] : []);
 
@@ -753,6 +824,7 @@
             }
 
             try {
+                // Triggers like and backend like notification
                 await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
             } catch (err) {
                 console.error("Error toggling like", err);
@@ -765,6 +837,7 @@
             }
         }
 
+        // Submit Comment without page reload + custom popup alert
         async function submitComment(postId) {
             const input = document.getElementById(`comment-input-${postId}`);
             const text = input.value.trim();
@@ -821,10 +894,12 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    showToast('Comment posted!', 'success');
                     loadPosts();
                 }
             } catch (err) {
                 console.error("Error posting comment", err);
+                showToast('Failed to post comment.', 'danger');
             }
         }
 
@@ -842,6 +917,7 @@
             }
         }
 
+        // Submit Reply without page reload + custom popup alert
         async function submitReply(postId, commentId) {
             const input = document.getElementById(`reply-input-${commentId}`);
             const text = input.value.trim();
@@ -882,10 +958,12 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    showToast('Reply posted!', 'success');
                     loadPosts();
                 }
             } catch (err) {
                 console.error("Error posting reply", err);
+                showToast('Failed to post reply.', 'danger');
             }
         }
 
@@ -893,4 +971,3 @@
     </script>
 </body>
 </html>
-        

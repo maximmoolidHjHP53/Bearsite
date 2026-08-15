@@ -127,7 +127,7 @@ app.get('/api/current-user', (req, res) => {
   }
 });
 
-// --- FRIENDS / USERS ROUTE (For Collab feature) ---
+// --- FRIENDS / USERS ROUTE (For Collab & Profile feature) ---
 app.get('/api/friends', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -138,6 +138,88 @@ app.get('/api/friends', async (req, res) => {
     res.json({ success: true, friends });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error fetching friends' });
+  }
+});
+
+// --- FRIEND REQUEST SEND ROUTE ---
+app.post('/api/friends/add', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const { userId } = req.body;
+    const targetObjectId = new ObjectId(userId);
+
+    if (targetObjectId.toString() === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: 'Cannot send friend request to yourself' });
+    }
+
+    const existing = await notificationsCollection.findOne({
+      userId: targetObjectId,
+      senderId: req.user._id,
+      type: 'friend_request'
+    });
+
+    if (!existing) {
+      await notificationsCollection.insertOne({
+        userId: targetObjectId,
+        senderId: req.user._id,
+        senderName: req.user.username,
+        senderProfilePic: req.user.profilePicture,
+        type: 'friend_request',
+        message: 'sent you a friend request.',
+        read: false,
+        createdAt: new Date()
+      });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error sending friend request' });
+  }
+});
+
+// --- FRIEND REQUEST RESPONSE ROUTES ---
+app.post('/api/friends/accept', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const { userId } = req.body;
+    const senderObjectId = new ObjectId(userId);
+
+    await usersCollection.updateOne(
+      { _id: req.user._id },
+      { $addToSet: { friends: senderObjectId } }
+    );
+    await usersCollection.updateOne(
+      { _id: senderObjectId },
+      { $addToSet: { friends: req.user._id } }
+    );
+
+    await notificationsCollection.deleteMany({
+      userId: req.user._id,
+      senderId: senderObjectId,
+      type: 'friend_request'
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error accepting friend request' });
+  }
+});
+
+app.post('/api/friends/decline', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const { userId } = req.body;
+    const senderObjectId = new ObjectId(userId);
+
+    await notificationsCollection.deleteMany({
+      userId: req.user._id,
+      senderId: senderObjectId,
+      type: 'friend_request'
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error declining friend request' });
   }
 });
 
@@ -166,7 +248,6 @@ app.post('/api/posts', async (req, res) => {
         collabWithId = collabUser._id;
         collabWithName = collabUser.username;
 
-        // Optionally send notification for collab invite
         await notificationsCollection.insertOne({
           userId: collabUser._id,
           senderId: req.user._id,
@@ -319,6 +400,29 @@ app.get('/api/notifications', async (req, res) => {
   }
 });
 
+app.get('/api/notifications/count', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const count = await notificationsCollection.countDocuments({ userId: req.user._id, read: false });
+    res.json({ success: true, count });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching notification count' });
+  }
+});
+
+app.post('/api/notifications/read', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    await notificationsCollection.updateMany(
+      { userId: req.user._id, read: false },
+      { $set: { read: true } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error updating notifications' });
+  }
+});
+
 app.post('/api/notifications/:id/read', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -330,52 +434,6 @@ app.post('/api/notifications/:id/read', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false });
-  }
-});
-
-// --- FRIEND REQUEST RESPONSE ROUTES ---
-app.post('/api/friends/accept', async (req, res) => {
-  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
-  try {
-    const { userId } = req.body;
-    const senderObjectId = new ObjectId(userId);
-
-    await usersCollection.updateOne(
-      { _id: req.user._id },
-      { $addToSet: { friends: senderObjectId } }
-    );
-    await usersCollection.updateOne(
-      { _id: senderObjectId },
-      { $addToSet: { friends: req.user._id } }
-    );
-
-    await notificationsCollection.deleteMany({
-      userId: req.user._id,
-      senderId: senderObjectId,
-      type: 'friend_request'
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Error accepting friend request' });
-  }
-});
-
-app.post('/api/friends/decline', async (req, res) => {
-  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
-  try {
-    const { userId } = req.body;
-    const senderObjectId = new ObjectId(userId);
-
-    await notificationsCollection.deleteMany({
-      userId: req.user._id,
-      senderId: senderObjectId,
-      type: 'friend_request'
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Error declining friend request' });
   }
 });
 
