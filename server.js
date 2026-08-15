@@ -23,10 +23,13 @@ app.use(passport.session());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
-// Use environment variable instead of hardcoding the password
 const uri = process.env.MONGO_URI;
-const client = new MongoClient(uri);
+if (!uri) {
+  console.error("FATAL ERROR: MONGO_URI environment variable is missing!");
+  process.exit(1);
+}
 
+const client = new MongoClient(uri);
 let db, usersCollection;
 
 async function startServer() {
@@ -41,7 +44,8 @@ async function startServer() {
       console.log(`Backend server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to connect to database", error);
+    console.error("Failed to connect to database:", error);
+    process.exit(1);
   }
 }
 
@@ -63,32 +67,36 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // --- GOOGLE STRATEGY ---
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://bearsite.onrender.com/auth/google/callback"
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    try {
-      const email = profile.emails[0].value;
-      let user = await usersCollection.findOne({ email });
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "https://bearsite.onrender.com/auth/google/callback"
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+        let user = await usersCollection.findOne({ email });
 
-      if (!user) {
-        const result = await usersCollection.insertOne({
-          email,
-          name: profile.displayName,
-          provider: 'google',
-          providerId: profile.id,
-          createdAt: new Date()
-        });
-        user = await usersCollection.findOne({ _id: result.insertedId });
+        if (!user) {
+          const result = await usersCollection.insertOne({
+            email,
+            name: profile.displayName,
+            provider: 'google',
+            providerId: profile.id,
+            createdAt: new Date()
+          });
+          user = await usersCollection.findOne({ _id: result.insertedId });
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err, null);
       }
-      return done(null, user);
-    } catch (err) {
-      return done(err, null);
     }
-  }
-));
+  ));
+} else {
+  console.warn("WARNING: Google Client ID or Secret is missing in environment variables.");
+}
 
 // --- AUTH ROUTES ---
 
