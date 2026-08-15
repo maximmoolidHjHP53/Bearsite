@@ -38,7 +38,7 @@
         .post-input-trigger .fake-input { width: 100%; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; color: #65676b; font-size: 15px; cursor: pointer; }
         .post-input-trigger .fake-input:hover { background: #e4e6eb; }
 
-        /* Facebook-style Centered Modal Overlay & Scroll Lock */
+        /* Facebook-style Centered Screen-Locked Modal Overlay */
         .modal-overlay { 
             display: none; 
             position: fixed; 
@@ -50,7 +50,6 @@
             z-index: 1000; 
             align-items: center; 
             justify-content: center; 
-            overflow-y: auto; 
             padding: 20px; 
         }
         
@@ -64,7 +63,6 @@
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
-            margin: auto;
         }
 
         .options-modal-content, .logout-modal-content {
@@ -280,7 +278,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Copy Link
                 </div>
                 <div class="option-item danger" id="delete-post-option-item" style="display: none;" onclick="deleteCurrentPost()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Post
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Post
                 </div>
             </div>
         </div>
@@ -516,7 +514,7 @@
                 `;
             }
 
-            const postsContainer = document.getElementById('profile-modal-posts');
+          const postsContainer = document.getElementById('profile-modal-posts');
             const userPosts = postsCache.filter(p => p.userId === userId);
             renderProfilePosts(userPosts, postsContainer);
 
@@ -629,7 +627,7 @@
             });
         }
 
-      async function deleteCurrentPost() {
+        async function deleteCurrentPost() {
             if (!activeOptionsPost) return;
             closePostOptionsModal();
 
@@ -670,7 +668,7 @@
             }
 
             if (images.length > 4) {
-                showToast('You can only select up to 4 pictures.', 'danger');
+                showToast('You can only select up to 4 picture.', 'danger');
                 return;
             }
 
@@ -756,7 +754,7 @@
             }
         }
 
-        async function loadPosts() {
+      async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
                 const data = await res.json();
@@ -833,8 +831,8 @@
                         `;
                     });
                 }
-
-              const postCard = document.createElement('div');
+           
+           const postCard = document.createElement('div');
                 postCard.className = 'feed-post';
                 postCard.innerHTML = `
                     <div class="post-header">
@@ -959,7 +957,8 @@
                     </div>
                 </div>
             `;
-            commentsList.appendChild(commentDiv);
+
+          commentsList.appendChild(commentDiv);
 
             const countSpan = document.querySelector(`[id='comment-count-${postId}']`);
             if (countSpan) countSpan.textContent = post.comments.length;
@@ -1043,8 +1042,7 @@
                 showToast('Failed to post reply.', 'danger');
             }
         }
-
-        window.addEventListener('keydown', (e) => {
+   window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closePostModal();
                 closeCollabModal();
@@ -1058,4 +1056,4 @@
     </script>
 </body>
 </html>
-
+        
