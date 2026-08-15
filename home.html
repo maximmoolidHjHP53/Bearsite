@@ -39,19 +39,26 @@
         .post-input-trigger .fake-input:hover { background: #e4e6eb; }
 
         /* Facebook-style Centered Screen-Locked Modal Overlay */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
         .modal-overlay { 
             display: none; 
             position: fixed; 
             top: 0; 
             left: 0; 
             width: 100vw; 
-            height: 100vh; 
+            height: 100dvh; 
             background: rgba(0, 0, 0, 0.6); 
             z-index: 9999; 
             align-items: center; 
             justify-content: center; 
             padding: 16px; 
-            overflow: hidden;
+            overflow-y: auto;
         }
         
         .modal-content, .friends-modal-content, .profile-modal-content, .options-modal-content, .logout-modal-content { 
@@ -401,13 +408,13 @@
         });
 
         function openLogoutModal() {
+            document.body.classList.add('modal-open');
             document.getElementById('logout-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
 
         function closeLogoutModal() {
             document.getElementById('logout-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
         }
 
         async function fetchNotificationsCount() {
@@ -438,24 +445,24 @@
         }
 
         function openPostModal() {
+            document.body.classList.add('modal-open');
             document.getElementById('modal-creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
             document.getElementById('modal-creator-name').textContent = currentUser.username;
             document.getElementById('create-post-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
             document.getElementById('modal-post-text').focus();
         }
 
         function closePostModal() {
             document.getElementById('create-post-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
         }
 
         async function openCollabModal() {
+            document.body.classList.add('modal-open');
             const friendsModal = document.getElementById('collab-friends-modal');
             const container = document.getElementById('friends-list-container');
             container.innerHTML = '<div style="padding: 20px; text-align: center; color: #65676b; font-size: 14px;">Loading friends...</div>';
             friendsModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
             try {
                 const res = await fetch('/api/friends');
                 const data = await res.json();
@@ -483,9 +490,9 @@
             }
         }
 
-        function closeCollabModal() {
+      function closeCollabModal() {
             document.getElementById('collab-friends-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
         }
 
         function selectCollabFriend(friend) {
@@ -497,6 +504,7 @@
         }
 
         function openUserProfileModal(userId, userName, userPic, age, birthday) {
+            document.body.classList.add('modal-open');
             const modal = document.getElementById('user-profile-modal');
             document.getElementById('profile-modal-pic').src = userPic || 'https://via.placeholder.com/90';
             document.getElementById('profile-modal-name').textContent = userName;
@@ -522,7 +530,6 @@
             renderProfilePosts(userPosts, postsContainer);
 
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
 
             fetch(`/api/users/${userId}`).then(res => res.json()).then(userData => {
                 if (userData.success && userData.user) {
@@ -571,9 +578,9 @@
             }
         }
 
-      function closeProfileModal() {
+        function closeProfileModal() {
             document.getElementById('user-profile-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
         }
 
         async function handleFriendAction(userId, btnElement) {
@@ -601,6 +608,7 @@
         }
         
         function openPostOptions(postId, userId) {
+            document.body.classList.add('modal-open');
             activeOptionsPost = postsCache.find(p => p._id === postId);
             const deleteOption = document.getElementById('delete-post-option-item');
             
@@ -610,12 +618,11 @@
                 deleteOption.style.display = 'none';
             }
             document.getElementById('post-options-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
 
         function closePostOptionsModal() {
             document.getElementById('post-options-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
             activeOptionsPost = null;
         }
 
@@ -812,7 +819,7 @@
                             });
                         }
 
-                      commentsHtml += `
+                        commentsHtml += `
                             <div class="comment-item">
                                 <img src="${comment.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
                                 <div style="flex:1;">
@@ -833,9 +840,9 @@
                             </div>
                         `;
                     });
-                }
+              }
 
-                const postCard = document.createElement('div');
+              const postCard = document.createElement('div');
                 postCard.className = 'feed-post';
                 postCard.innerHTML = `
                     <div class="post-header">
@@ -982,15 +989,7 @@
             }
         }
 
-        function toggleReplyBox(commentId) {
-            const box = document.getElementById(`reply-box-${commentId}`);
-            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-            if (box.style.display === 'flex') {
-                document.getElementById(`reply-input-${commentId}`).focus();
-            }
-        }
-
-        async function handleReplyKey(e, postId, commentId) {
+      async function handleReplyKey(e, postId, commentId) {
             if (e.key === 'Enter') {
                 submitReply(postId, commentId);
             }
