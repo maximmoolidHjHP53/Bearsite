@@ -8,6 +8,7 @@
         * {
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
+            box-sizing: border-box;
         }
         body { 
             font-family: Helvetica, Arial, sans-serif; 
@@ -22,6 +23,8 @@
         .logo { font-family: cursive; font-size: 28px; color: #262626; font-weight: bold; }
         .user-nav { display: flex; align-items: center; gap: 10px; }
         .user-nav img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+        .nav-icon-btn { background: #f0f2f5; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #050505; text-decoration: none; transition: background 0.2s; }
+        .nav-icon-btn:hover { background: #e4e6eb; }
         .logout-btn { background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; color: #050505; font-size: 14px; }
 
         /* Container */
@@ -34,8 +37,8 @@
         .post-input-trigger .fake-input { width: 100%; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; color: #65676b; font-size: 15px; cursor: pointer; }
         .post-input-trigger .fake-input:hover { background: #e4e6eb; }
 
-        /* Facebook-style Posting Modal */
-        #create-post-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        /* Modals Overlay */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; }
         .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 20px; }
         .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
@@ -47,7 +50,6 @@
 
         #modal-media-preview { margin-top: 10px; position: relative; max-height: 280px; overflow: hidden; border-radius: 8px; display: none; background: #000; }
         
-        /* Preview Grid for 1-4 Pictures */
         .preview-grid { display: grid; gap: 3px; max-height: 280px; overflow: hidden; width: 100%; }
         .preview-grid.grid-1 { grid-template-columns: 1fr; }
         .preview-grid.grid-2 { grid-template-columns: 1fr 1fr; }
@@ -71,7 +73,6 @@
         .post-btn:disabled { background: #e4e6eb; color: #bcc0c4; cursor: not-allowed; }
 
         /* Collab Friends Selection Modal */
-        #collab-friends-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center; }
         .friends-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; }
         .friend-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
         .friend-item:hover { background: #f0f2f5; }
@@ -79,16 +80,31 @@
         .friend-info img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
         .friend-name { font-weight: bold; font-size: 14px; }
 
-        /* Post Feed Cards & Performance Optimization */
+        /* User Profile Modal Styles */
+        .profile-modal-content { background: white; width: 100%; max-width: 520px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 85vh; }
+        .profile-header-center { display: flex; flex-direction: column; align-items: center; padding: 20px; border-bottom: 1px solid #e4e6eb; text-align: center; background: #fff; }
+        .profile-header-center img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .profile-header-center h3 { margin: 0 0 4px 0; font-size: 20px; }
+        .profile-header-center p { margin: 0 0 12px 0; font-size: 13px; color: #65676b; }
+        .profile-action-btns { display: flex; gap: 10px; justify-content: center; width: 100%; }
+        .btn-add-friend { background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .btn-decline-friend { background: #e4e6eb; color: #050505; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .profile-posts-scroll { padding: 16px; overflow-y: auto; background: #f0f2f5; flex: 1; }
+
+        /* Post Feed Cards */
         .feed-post { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 16px; padding: 12px 16px; content-visibility: auto; }
-        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .post-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .post-author { font-weight: bold; font-size: 15px; }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; position: relative; }
+        .post-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        .post-author-info { flex: 1; }
+        .post-author { font-weight: bold; font-size: 15px; cursor: pointer; }
+        .post-author:hover { text-decoration: underline; }
         .post-time { font-size: 12px; color: #65676b; }
+        .post-options-trigger { background: none; border: none; cursor: pointer; padding: 6px; color: #65676b; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .post-options-trigger:hover { background: #f0f2f5; }
         
         .post-body { font-size: 15px; margin-bottom: 10px; line-height: 1.5; white-space: pre-wrap; -webkit-user-select: text; user-select: text; }
         
-        /* Facebook-style Cropped Media Grid */
+        /* Post Media Grid */
         .post-media-grid { display: grid; gap: 3px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: #000; max-height: 450px; width: 100%; }
         .post-media-grid.grid-1 { grid-template-columns: 1fr; }
         .post-media-grid.grid-2 { grid-template-columns: 1fr 1fr; }
@@ -131,6 +147,12 @@
         .reply-input-wrapper { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 15px; padding-right: 6px; }
         .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; -webkit-user-select: text; user-select: text; }
 
+        /* Options Action Sheet Modal */
+        .options-modal-content { background: white; width: 100%; max-width: 320px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; padding: 8px 0; }
+        .option-item { padding: 12px 16px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: #050505; }
+        .option-item:hover { background: #f0f2f5; }
+        .option-item.danger { color: #e41e3f; }
+
         /* Loading Popup Overlay */
         #loading-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
         .loading-box { background: white; padding: 24px 32px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-weight: bold; font-size: 16px; color: #262626; display: flex; align-items: center; gap: 12px; }
@@ -149,7 +171,7 @@
     </div>
 
     <!-- Create Post Modal -->
-    <div id="create-post-modal">
+    <div id="create-post-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <span>Create post</span>
@@ -170,12 +192,10 @@
                 <div class="modal-add-box">
                     <span>Add to your post (Max 4 photos)</span>
                     <div class="modal-tools">
-                        <!-- Photos Input (Images only, max 4) -->
                         <label class="code-upload-label" title="Upload Photos">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                             <input type="file" id="modal-media-file" accept="image/*" multiple style="display: none;">
                         </label>
-                        <!-- Collab Button -->
                         <button type="button" class="collab-btn" onclick="openCollabModal()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Collab
                         </button>
@@ -188,8 +208,8 @@
         </div>
     </div>
 
-    <!-- Collab Friends Modal -->
-    <div id="collab-friends-modal">
+    <!-- Collab Friends Selection Modal -->
+    <div id="collab-friends-modal" class="modal-overlay">
         <div class="friends-modal-content">
             <div class="modal-header" style="font-size: 16px;">
                 <span>Select Collab Friend</span>
@@ -202,9 +222,45 @@
         </div>
     </div>
 
+    <!-- User Profile Modal -->
+    <div id="user-profile-modal" class="modal-overlay">
+        <div class="profile-modal-content">
+            <div class="modal-header">
+                <span>User Profile</span>
+                <button class="modal-close-btn" onclick="closeProfileModal()">×</button>
+            </div>
+            <div class="profile-header-center">
+                <img id="profile-modal-pic" src="" alt="Profile">
+                <h3 id="profile-modal-name"></h3>
+                <p id="profile-modal-meta"></p>
+                <div class="profile-action-btns" id="profile-action-btns-container">
+                    <!-- Add/Decline buttons rendered dynamically -->
+                </div>
+            </div>
+            <div class="profile-posts-scroll" id="profile-modal-posts">
+                <!-- User posts list displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Options (3-Dots) Modal -->
+    <div id="post-options-modal" class="modal-overlay">
+        <div class="options-modal-content">
+            <div class="option-item" onclick="copyPostLink()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 75.29l3.54 3.54a5 5 0 0 1-7.07 7.07l-1.41-1.41"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3.54-3.54a5 5 0 1 1 7.07-7.07l1.41 1.41"></path></svg> Copy link
+            </div>
+            <div class="option-item danger" id="delete-post-option" onclick="deleteCurrentPost()" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete post
+            </div>
+            <div class="option-item" onclick="closePostOptionsModal()">Cancel</div>
+        </div>
+    </div>
+
     <header>
         <div class="logo">bearsite</div>
-        <div class="user-nav" id="user-nav"></div>
+        <div class="user-nav" id="user-nav">
+            <!-- Navigation rendered dynamically -->
+        </div>
     </header>
 
     <div class="container">
@@ -214,7 +270,7 @@
                 <img id="feed-creator-pic" src="" alt="User">
                 <div class="fake-input" id="fake-input-text">What's on your mind?</div>
             </div>
-        </div>
+          </div>
 
         <!-- Feed Stream -->
         <div id="feed-container"></div>
@@ -222,9 +278,10 @@
 
     <script>
         let currentUser = null;
-        let selectedMediaFiles = []; // Array of {url, type}
+        let selectedMediaFiles = []; 
         let selectedCollabFriend = null;
         let postsCache = [];
+        let activeOptionsPost = null;
 
         async function initPage() {
             const loadingOverlay = document.getElementById('loading-overlay');
@@ -241,9 +298,13 @@
                 }
                 currentUser = data.user;
                 document.getElementById('feed-creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
+                
                 document.getElementById('user-nav').innerHTML = `
                     <img src="${currentUser.profilePicture || 'https://via.placeholder.com/36'}" alt="Profile">
                     <span style="font-weight: bold; font-size: 14px;">${currentUser.username}</span>
+                    <a href="/notification.html" class="nav-icon-btn" title="Notifications">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </a>
                     <a href="/auth/logout" class="logout-btn">Logout</a>
                 `;
                 await loadPosts();
@@ -310,13 +371,144 @@
             closeCollabModal();
         }
 
+        // User Profile Modal Handler
+        async function openUserProfileModal(userId, userName, userPic, age, birthday) {
+            const modal = document.getElementById('user-profile-modal');
+            document.getElementById('profile-modal-pic').src = userPic || 'https://via.placeholder.com/80';
+            document.getElementById('profile-modal-name').textContent = userName;
+            document.getElementById('profile-modal-meta').textContent = `Age: ${age || 'N/A'} • Birthday: ${birthday || 'N/A'}`;
+            
+            const btnContainer = document.getElementById('profile-action-btns-container');
+            if (userId === currentUser._id) {
+                btnContainer.innerHTML = ''; // Don't show add friend for self
+            } else {
+                btnContainer.innerHTML = `
+                    <button class="btn-add-friend" onclick="handleFriendAction('${userId}', 'add')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg> Add Friend
+                    </button>
+                    <button class="btn-decline-friend" onclick="handleFriendAction('${userId}', 'decline')">Decline</button>
+                `;
+            }
+
+            const postsContainer = document.getElementById('profile-modal-posts');
+            postsContainer.innerHTML = '<div style="text-align: center; color: #65676b; padding: 20px;">Loading posts...</div>';
+            modal.style.display = 'flex';
+
+            // Filter all posts by this user
+            const userPosts = postsCache.filter(p => p.userId === userId);
+            if (userPosts.length > 0) {
+                postsContainer.innerHTML = '';
+                userPosts.forEach(post => {
+                    const postDiv = document.createElement('div');
+                    postDiv.className = 'feed-post';
+                    postDiv.style.marginBottom = '12px';
+                    
+                    let mediaHtml = '';
+                    const urls = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : (post.mediaUrl ? [post.mediaUrl] : []);
+                    if (urls.length > 0) {
+                        mediaHtml = `<div class="post-media-grid grid-${urls.length}">`;
+                        urls.forEach(url => {
+                            mediaHtml += `<div class="grid-item"><img src="${url}" alt="Post image" loading="lazy"></div>`;
+                        });
+                        mediaHtml += `</div>`;
+                    }
+
+                    postDiv.innerHTML = `
+                        <div class="post-header">
+                            <img src="${post.userProfilePic || 'https://via.placeholder.com/40'}" alt="Author">
+                            <div>
+                                <div class="post-author">${post.userName}</div>
+                                <div class="post-time">${new Date(post.createdAt).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div class="post-body">${post.content}</div>
+                        ${mediaHtml}
+                    `;
+                    postsContainer.appendChild(postDiv);
+                });
+            } else {
+                postsContainer.innerHTML = '<div style="text-align: center; color: #65676b; padding: 20px;">No posts found for this user.</div>';
+            }
+        }
+
+        function closeProfileModal() {
+            document.getElementById('user-profile-modal').style.display = 'none';
+        }
+
+        async function handleFriendAction(userId, action) {
+            try {
+                const endpoint = action === 'add' ? `/api/friends/add` : `/api/friends/decline`;
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(action === 'add' ? 'Friend request sent!' : 'Friend request declined.');
+                }
+            } catch (err) {
+                console.error("Error handling friend action", err);
+            }
+        }
+
+        // Post Options (3-Dots Menu) Handlers
+        function openPostOptions(postId, userId) {
+            activeOptionsPost = postsCache.find(p => p._id === postId);
+            const deleteOption = document.getElementById('delete-post-option');
+            
+            // Show delete option if current user is owner
+            if (activeOptionsPost && (activeOptionsPost.userId === currentUser._id || userId === currentUser._id)) {
+                deleteOption.style.display = 'flex';
+            } else {
+                deleteOption.style.display = 'none';
+            }
+            document.getElementById('post-options-modal').style.display = 'flex';
+        }
+
+        function closePostOptionsModal() {
+            document.getElementById('post-options-modal').style.display = 'none';
+            activeOptionsPost = null;
+        }
+
+        function copyPostLink() {
+            if (!activeOptionsPost) return;
+            const postUrl = `${window.location.origin}/post/${activeOptionsPost._id}`;
+            navigator.clipboard.writeText(postUrl).then(() => {
+                alert('Post link copied to clipboard!');
+                closePostOptionsModal();
+            }).catch(err => {
+                console.error('Failed to copy link', err);
+            });
+        }
+
+        async function deleteCurrentPost() {
+            if (!activeOptionsPost) return;
+            if (!confirm('Are you sure you want to delete this post?')) return;
+
+            const postId = activeOptionsPost._id;
+            try {
+                const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success || res.ok) {
+                    postsCache = postsCache.filter(p => p._id !== postId);
+                    renderFeed(postsCache);
+                    closePostOptionsModal();
+                } else {
+                    alert('Failed to delete post.');
+                }
+            } catch (err) {
+                console.error('Error deleting post', err);
+                alert('An error occurred while deleting the post.');
+            }
+        }
+
         // File upload handler strictly for Photos (Max 4)
         document.getElementById('modal-media-file').addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
 
             const images = files.filter(f => f.type.startsWith('image'));
-
             if (images.length === 0) {
                 alert('Only image files are allowed.');
                 return;
@@ -328,7 +520,6 @@
             }
 
             const limitFiles = images.slice(0, 4);
-
             const readerPromises = limitFiles.map(file => {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
@@ -393,7 +584,7 @@
                     body: JSON.stringify({
                         content,
                         mediaUrls: mediaUrls,
-                        mediaUrl: mediaUrls[0] || '', // backward compatibility
+                        mediaUrl: mediaUrls[0] || '',
                         mediaType: 'image',
                         collabWith: selectedCollabFriend ? selectedCollabFriend._id : null
                     })
@@ -412,7 +603,7 @@
             }
         }
 
-        async function loadPosts() {
+      async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
                 const data = await res.json();
@@ -436,7 +627,7 @@
                 let mediaHtml = '';
                 const urls = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : (post.mediaUrl ? [post.mediaUrl] : []);
 
-                if (urls.length > 0 && post.mediaType !== 'video') {
+                if (urls.length > 0) {
                     const count = urls.length;
                     mediaHtml = `<div class="post-media-grid grid-${count}" oncontextmenu="return false;">`;
                     urls.forEach(url => {
@@ -496,11 +687,14 @@
                 postCard.className = 'feed-post';
                 postCard.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.userProfilePic || 'https://via.placeholder.com/40'}" alt="Author">
-                        <div>
-                            <div class="post-author">${authorText}</div>
+                        <img src="${post.userProfilePic || 'https://via.placeholder.com/40'}" alt="Author" onclick="openUserProfileModal('${post.userId}', '${post.userName}', '${post.userProfilePic}', '${post.age}', '${post.birthday}')">
+                        <div class="post-author-info">
+                            <div class="post-author" onclick="openUserProfileModal('${post.userId}', '${post.userName}', '${post.userProfilePic}', '${post.age}', '${post.birthday}')">${authorText}</div>
                             <div class="post-time">${new Date(post.createdAt).toLocaleDateString()}</div>
                         </div>
+                        <button class="post-options-trigger" onclick="openPostOptions('${post._id}', '${post.userId}')" title="More options">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                        </button>
                     </div>
                     <div class="post-body">${post.content}</div>
                     ${mediaHtml}
@@ -654,7 +848,6 @@
             if (!text) return;
 
             input.value = '';
-
             const post = postsCache.find(p => p._id === postId);
             if (!post) return;
             const comment = post.comments.find(c => c.id === commentId || c._id === commentId);
@@ -700,4 +893,4 @@
     </script>
 </body>
 </html>
-          
+        

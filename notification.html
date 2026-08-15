@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bearsite - Notifications</title>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            box-sizing: border-box;
+        }
+        body { 
+            font-family: Helvetica, Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            color: #050505; 
+        }
+        
+        /* Navbar */
+        header { background: white; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .logo { font-family: cursive; font-size: 28px; color: #262626; font-weight: bold; text-decoration: none; }
+        .user-nav { display: flex; align-items: center; gap: 10px; }
+        .user-nav img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+        .nav-icon-btn { background: #f0f2f5; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #050505; text-decoration: none; transition: background 0.2s; }
+        .nav-icon-btn:hover { background: #e4e6eb; }
+        .nav-icon-btn.active { background: #e7f3ff; color: #1877f2; }
+        .logout-btn { background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; color: #050505; font-size: 14px; }
+
+        /* Container */
+        .container { max-width: 680px; margin: 20px auto; padding: 0 10px; }
+        .section-title { font-size: 22px; font-weight: bold; margin-bottom: 16px; padding: 0 4px; }
+
+        /* Notification Card */
+        .notification-card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; cursor: pointer; }
+        .notification-card.unread { background: #e7f3ff; }
+        .notification-card:hover { background: #f2f2f2; }
+        .notification-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .notification-left img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+        .notification-text { font-size: 14px; line-height: 1.4; color: #050505; }
+        .notification-text span { font-weight: bold; }
+        .notification-time { font-size: 12px; color: #65676b; margin-top: 2px; }
+        
+        .notification-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-accept { background: #1877f2; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+        .btn-accept:hover { background: #166fe5; }
+        .btn-decline { background: #e4e6eb; color: #050505; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+        .btn-decline:hover { background: #d8dadf; }
+
+        .empty-state { text-align: center; padding: 40px; color: #65676b; font-size: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        /* Loading Popup Overlay */
+        #loading-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
+        .loading-box { background: white; padding: 24px 32px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-weight: bold; font-size: 16px; color: #262626; display: flex; align-items: center; gap: 12px; }
+        .spinner { width: 20px; height: 20px; border: 3px solid #dbdbdb; border-top: 3px solid #1877f2; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Popup Overlay -->
+    <div id="loading-overlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <span id="loading-text">Loading notifications...</span>
+        </div>
+    </div>
+
+    <header>
+        <a href="/" class="logo">bearsite</a>
+        <div class="user-nav" id="user-nav">
+            <!-- Navigation rendered dynamically -->
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-title">Notifications</div>
+        <div id="notifications-container">
+            <!-- Notifications populated dynamically -->
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        async function initPage() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/current-user');
+                const data = await res.json();
+                if (!data.success) {
+                    window.location.href = '/';
+                    return;
+                }
+                currentUser = data.user;
+                
+                document.getElementById('user-nav').innerHTML = `
+                    <img src="${currentUser.profilePicture || 'https://via.placeholder.com/36'}" alt="Profile">
+                    <span style="font-weight: bold; font-size: 14px;">${currentUser.username}</span>
+                    <a href="/notification.html" class="nav-icon-btn active" title="Notifications">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </a>
+                    <a href="/auth/logout" class="logout-btn">Logout</a>
+                `;
+
+                await loadNotifications();
+            } catch (err) {
+                console.error("Initialization error", err);
+            } finally {
+                loadingOverlay.style.display = 'none';
+            }
+        }
+
+        async function loadNotifications() {
+            const container = document.getElementById('notifications-container');
+            try {
+                const res = await fetch('/api/notifications');
+                const data = await res.json();
+
+                if (data.success && data.notifications && data.notifications.length > 0) {
+                    container.innerHTML = '';
+                    data.notifications.forEach(notif => {
+                        const card = document.createElement('div');
+                        card.className = `notification-card ${notif.read ? '' : 'unread'}`;
+                        card.id = `notif-${notif._id}`;
+
+                        let actionHtml = '';
+                        if (notif.type === 'friend_request') {
+                            actionHtml = `
+                                <div class="notification-actions" onclick="event.stopPropagation()">
+                                    <button class="btn-accept" onclick="respondFriendRequest('${notif._id}', '${notif.senderId}', 'accept')">Confirm</button>
+                                    <button class="btn-decline" onclick="respondFriendRequest('${notif._id}', '${notif.senderId}', 'decline')">Delete</button>
+                                </div>
+                            `;
+                        } else if (notif.type === 'collab_invite') {
+                            actionHtml = `
+                                <div class="notification-actions" onclick="event.stopPropagation()">
+                                    <button class="btn-accept" onclick="respondCollab('${notif._id}', '${notif.postId}', 'accept')">Accept</button>
+                                    <button class="btn-decline" onclick="respondCollab('${notif._id}', '${notif.postId}', 'decline')">Decline</button>
+                                </div>
+                            `;
+                        }
+
+                        card.innerHTML = `
+                            <div class="notification-left" onclick="handleNotificationClick('${notif._id}', '${notif.link || '#'}')">
+                                <img src="${notif.senderProfilePic || 'https://via.placeholder.com/48'}" alt="User">
+                                <div>
+                                    <div class="notification-text"><span>${notif.senderName}</span> ${notif.message}</div>
+                                    <div class="notification-time">${getTimeAgo(notif.createdAt)}</div>
+                                </div>
+                            </div>
+                            ${actionHtml}
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    container.innerHTML = `<div class="empty-state">No notifications right now.</div>`;
+                }
+            } catch (err) {
+                console.error("Error loading notifications", err);
+                container.innerHTML = `<div class="empty-state">Failed to load notifications.</div>`;
+            }
+        }
+
+        async function handleNotificationClick(notificationId, link) {
+            try {
+                await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' });
+            } catch (err) {
+                console.error("Error marking notification read", err);
+            }
+            if (link && link !== '#') {
+                window.location.href = link;
+            } else {
+                window.location.reload();
+            }
+        }
+
+        async function respondFriendRequest(notificationId, senderId, action) {
+            try {
+                const endpoint = action === 'accept' ? '/api/friends/accept' : '/api/friends/decline';
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: senderId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`notif-${notificationId}`).remove();
+                }
+            } catch (err) {
+                console.error("Error handling friend request", err);
+            }
+        }
+
+        async function respondCollab(notificationId, postId, action) {
+            try {
+                const res = await fetch(`/api/posts/${postId}/collab-response`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`notif-${notificationId}`).remove();
+                }
+            } catch (err) {
+                console.error("Error handling collab response", err);
+            }
+        }
+
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return "Just now";
+        }
+
+        initPage();
+    </script>
+</body>
+</html>
