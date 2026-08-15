@@ -23,7 +23,8 @@ app.use(passport.session());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
-const uri = "mongodb+srv://airmountcompany_db_user:8DcHOJXkjyZSRMPm@cluster0.2dihhnv.mongodb.net/?appName=Cluster0";
+// Use environment variable instead of hardcoding the password
+const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri);
 
 let db, usersCollection;
