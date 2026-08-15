@@ -1,18 +1,24 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
-const admin = require('firebase-admin');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Initialize Firebase Admin using default environment credentials or project config
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  projectId: "twitter-app-d879c"
-});
+// Required for Passport sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'supersecretkey',
+  resave: false,
+  saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
@@ -45,37 +51,74 @@ async function startServer() {
 
 startServer();
 
-// --- API AUTH ROUTE FOR FIREBASE ---
-app.post('/api/auth/google', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, error: 'Unauthorized' });
-  }
+// --- PASSPORT SERIALIZATION ---
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
 
-  const idToken = authHeader.split('Bearer ')[1];
-
+passport.deserializeUser(async (id, done) => {
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const { uid, email, name, picture } = decodedToken;
-
-    // Save or update user in MongoDB Atlas
-    const user = await usersCollection.findOneAndUpdate(
-      { firebaseUid: uid },
-      { 
-        $set: { 
-          email, 
-          name, 
-          avatar: picture, 
-          lastLoginAt: new Date() 
-        },
-        $setOnInsert: { firebaseUid: uid, createdAt: new Date() }
-      },
-      { upsert: true, returnDocument: 'after' }
-    );
-
-    res.json({ success: true, user });
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    res.status(401).json({ success: false, error: 'Invalid token' });
+    const { ObjectId } = require('mongodb');
+    const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+    done(null, user);
+  } catch (err) {
+    done(err, null);
   }
+});
+
+// --- GOOGLE STRATEGY ---
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "https://bearsite.onrender.com/auth/google/callback"
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+        let user = await usersCollection.findOne({ email });
+
+        if (!user) {
+          const result = await usersCollection.insertOne({
+            email,
+            name: profile.displayName,
+            provider: 'google',
+            providerId: profile.id,
+            createdAt: new Date()
+          });
+          user = await usersCollection.findOne({ _id: result.insertedId });
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err, null);
+      }
+    }
+  ));
+} else {
+  console.warn("WARNING: Google Client ID or Secret is missing in environment variables.");
+}
+
+// --- AUTH ROUTES ---
+
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    res.redirect('/?login=success');
+  }
+);
+
+app.get('/api/current-user', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ success: true, user: req.user });
+  } else {
+    res.json({ success: false });
+  }
+});
+
+app.get('/auth/logout', (req, res) => {
+  req.logout(() => {
+    res.redirect('/');
+  });
 });

@@ -9,11 +9,10 @@
         .card { background: white; padding: 40px 30px; border: 1px solid #dbdbdb; border-radius: 8px; text-align: center; width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h1 { font-family: cursive; font-size: 38px; margin-bottom: 5px; color: #262626; }
         p { color: #8e8e8e; font-size: 14px; margin-bottom: 30px; }
-        .google-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border: 1px solid #dbdbdb; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; background-color: white; color: #444; text-decoration: none; box-sizing: border-box; }
+        .google-btn { display: block; width: 100%; padding: 12px; border: 1px solid #dbdbdb; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; background-color: white; color: #444; text-decoration: none; box-sizing: border-box; text-align: center; }
         .google-btn:hover { background-color: #f5f5f5; }
         #welcome-section { display: none; }
         .logout-btn { background-color: #ed4956; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; text-decoration: none; display: block; text-align: center; }
-        #message { margin-top: 15px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -23,65 +22,32 @@
         
         <div id="login-section">
             <p>Sign in quickly with your Google account</p>
-            <button onclick="loginWithGoogle()" class="google-btn">Continue with Google</button>
+            <a href="/auth/google" class="google-btn">Continue with Google</a>
         </div>
 
         <div id="welcome-section">
             <p id="user-greeting" style="color: #262626; font-weight: bold; font-size: 16px;"></p>
             <p>🎉 You are successfully logged in!</p>
-            <a href="#" onclick="logout()" class="logout-btn">Log Out</a>
+            <a href="/auth/logout" class="logout-btn">Log Out</a>
         </div>
-
-        <div id="message"></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { firebaseConfig } from "./firebaseConfig.js";
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const message = document.getElementById('message');
-
-        window.loginWithGoogle = async () => {
-            const provider = new GoogleAuthProvider();
-            message.style.color = '#8e8e8e';
-            message.textContent = 'Opening Google sign-in...';
-
+    <script>
+        async function checkUser() {
             try {
-                const result = await signInWithPopup(auth, provider);
-                const token = await result.user.getIdToken();
-                
-                const res = await fetch('/api/auth/google', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` 
-                    }
-                });
+                const res = await fetch('/api/current-user');
                 const data = await res.json();
-
                 if (data.success) {
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('welcome-section').style.display = 'block';
                     document.getElementById('user-greeting').textContent = `Welcome, ${data.user.name || data.user.email}!`;
-                    message.textContent = '';
-                } else {
-                    message.style.color = '#ed4956';
-                    message.textContent = '⚠️ Authentication failed on server.';
                 }
-            } catch (error) {
-                console.error("Google login error", error);
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Sign-in cancelled or failed.';
+            } catch (err) {
+                console.error("Error checking session", err);
             }
-        };
+        }
 
-        window.logout = async () => {
-            await signOut(auth);
-            location.reload();
-        };
+        checkUser();
     </script>
 </body>
 </html>
