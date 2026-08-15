@@ -8,7 +8,7 @@ const path = require('path');
 
 const app = express();
 
-// Increase payload limits for media/base64 uploads
+// Increase payload limits for image/base64 uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cors());
@@ -154,7 +154,7 @@ app.get('/api/posts', async (req, res) => {
 app.post('/api/posts', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
 
-  const { content, mediaUrls, mediaUrl, mediaType, collabWith } = req.body;
+  const { content, mediaUrls, mediaUrl, collabWith } = req.body;
 
   let collabWithId = null;
   let collabWithName = '';
@@ -182,7 +182,7 @@ app.post('/api/posts', async (req, res) => {
     content: content || '',
     mediaUrls: formattedMediaUrls,
     mediaUrl: formattedMediaUrls[0] || '',
-    mediaType: mediaType || '', // 'image' or 'video'
+    mediaType: formattedMediaUrls.length > 0 ? 'image' : '',
     collabWith: collabWithId,
     collabWithName: collabWithName,
     likes: [],
