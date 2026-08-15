@@ -1,25 +1,27 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Serve static frontend files from root directory
-app.use(express.static(path.join(__dirname)));
+// Required for Passport sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'supersecretkey',
+  resave: false,
+  saveUninitialized: false
+}));
 
-// Configure Nodemailer with your Gmail SMTP
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
-  }
-});
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Serve static frontend files
+app.use(express.static(path.join(__dirname)));
 
 const uri = "mongodb+srv://airmountcompany_db_user:8DcHOJXkjyZSRMPm@cluster0.2dihhnv.mongodb.net/?appName=Cluster0";
 const client = new MongoClient(uri);
@@ -44,143 +46,70 @@ async function startServer() {
 
 startServer();
 
-// --- REGISTRATION FLOW ---
+// --- PASSPORT SERIALIZATION ---
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
 
-app.post('/api/register-step1', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password || password.length < 6) {
-    return res.status(400).json({ success: false, error: 'Email and password (min 6 chars) are required.' });
-  }
-
+passport.deserializeUser(async (id, done) => {
   try {
-    console.log(`Processing registration for: ${email}`);
-    const existingUser = await usersCollection.findOne({ email });
-    if (existingUser && existingUser.isVerified) {
-      return res.status(400).json({ success: false, error: 'Email is already registered. Please log in.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-    if (existingUser) {
-      await usersCollection.updateOne({ email }, { $set: { password: hashedPassword, code } });
-    } else {
-      await usersCollection.insertOne({
-        email,
-        password: hashedPassword,
-        code,
-        isVerified: false,
-        username: null,
-        birthday: null,
-        createdAt: new Date()
-      });
-    }
-
-    console.log(`Sending verification email via Gmail SMTP to ${email}...`);
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: 'Your InstaClone Verification Code',
-      html: `<p>Your registration verification code is: <strong>${code}</strong></p>`
-    });
-
-    console.log(`Verification email sent successfully to ${email}`);
-    res.json({ success: true, message: 'Verification code sent to your email!' });
-  } catch (error) {
-    console.error("Error in /api/register-step1:", error);
-    res.status(500).json({ success: false, error: error.message || 'Failed to send email.' });
+    const { ObjectId } = require('mongodb');
+    const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+    done(null, user);
+  } catch (err) {
+    done(err, null);
   }
 });
 
-app.post('/api/register-step2', async (req, res) => {
-  const { email, code } = req.body;
+// --- GOOGLE STRATEGY ---
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "https://bearsite.onrender.com/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      const email = profile.emails[0].value;
+      let user = await usersCollection.findOne({ email });
 
-  try {
-    const user = await usersCollection.findOne({ email });
-    if (user && user.code === code) {
-      res.json({ success: true, message: 'Code verified successfully!' });
-    } else {
-      res.status(400).json({ success: false, error: 'Invalid verification code.' });
+      if (!user) {
+        const result = await usersCollection.insertOne({
+          email,
+          name: profile.displayName,
+          provider: 'google',
+          providerId: profile.id,
+          createdAt: new Date()
+        });
+        user = await usersCollection.findOne({ _id: result.insertedId });
+      }
+      return done(null, user);
+    } catch (err) {
+      return done(err, null);
     }
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+  }
+));
+
+// --- AUTH ROUTES ---
+
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    res.redirect('/?login=success');
+  }
+);
+
+app.get('/api/current-user', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ success: true, user: req.user });
+  } else {
+    res.json({ success: false });
   }
 });
 
-app.post('/api/register-step3', async (req, res) => {
-  const { email, username, birthday } = req.body;
-
-  if (!username || username.length < 3) {
-    return res.status(400).json({ success: false, error: 'Username must be at least 3 characters long.' });
-  }
-  if (!birthday) {
-    return res.status(400).json({ success: false, error: 'Please provide your birthday.' });
-  }
-
-  try {
-    const existingUsername = await usersCollection.findOne({ username, isVerified: true });
-    if (existingUsername) {
-      return res.status(400).json({ success: false, error: 'Username is already taken.' });
-    }
-
-    await usersCollection.updateOne(
-      { email },
-      { $set: { username, birthday, isVerified: true, code: null } }
-    );
-
-    res.status(201).json({ success: true, message: 'Account fully created successfully!' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-
-// --- LOGIN FLOW ---
-
-app.post('/api/login-step1', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await usersCollection.findOne({ email });
-    if (!user || !user.isVerified) {
-      return res.status(400).json({ success: false, error: 'User not found or not verified. Please register first.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, error: 'Incorrect password. Please try again.' });
-    }
-
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    await usersCollection.updateOne({ email }, { $set: { code } });
-
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: 'Your InstaClone Login Verification Code',
-      html: `<p>Your login verification code is: <strong>${code}</strong></p>`
-    });
-
-    res.json({ success: true, message: 'Verification code sent to your email!' });
-  } catch (error) {
-    console.error("Error in /api/login-step1:", error);
-    res.status(500).json({ success: false, error: error.message || 'Failed to send email.' });
-  }
-});
-
-app.post('/api/login-step2', async (req, res) => {
-  const { email, code } = req.body;
-
-  try {
-    const user = await usersCollection.findOne({ email });
-
-    if (user && user.code === code) {
-      res.json({ success: true, message: 'Logged in successfully!' });
-    } else {
-      res.status(400).json({ success: false, error: 'Invalid verification code.' });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+app.get('/auth/logout', (req, res) => {
+  req.logout(() => {
+    res.redirect('/');
+  });
 });

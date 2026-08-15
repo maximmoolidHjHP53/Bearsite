@@ -3,269 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaClone - Secure Auth</title>
+    <title>InstaClone - Google Login</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #fafafa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border: 1px solid #dbdbdb; border-radius: 8px; text-align: center; width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card { background: white; padding: 40px 30px; border: 1px solid #dbdbdb; border-radius: 8px; text-align: center; width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h1 { font-family: cursive; font-size: 38px; margin-bottom: 5px; color: #262626; }
-        p { color: #8e8e8e; font-size: 14px; margin-bottom: 20px; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #dbdbdb; border-radius: 4px; box-sizing: border-box; background: #fafafa; font-size: 14px; }
-        input:focus { border-color: #a8a8a8; outline: none; }
-        button { width: 100%; padding: 10px; background-color: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 5px; }
-        button:hover { background-color: #1877f2; }
+        p { color: #8e8e8e; font-size: 14px; margin-bottom: 30px; }
+        .google-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border: 1px solid #dbdbdb; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; background-color: white; color: #444; text-decoration: none; box-sizing: border-box; }
+        .google-btn:hover { background-color: #f5f5f5; }
+        #welcome-section { display: none; }
+        .logout-btn { background-color: #ed4956; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; text-decoration: none; display: block; text-align: center; }
         #message { margin-top: 15px; font-size: 13px; font-weight: bold; }
-        .switch-text { margin-top: 20px; font-size: 13px; color: #262626; }
-        .switch-text a { color: #0095f6; text-decoration: none; font-weight: bold; cursor: pointer; }
-        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>InstaClone</h1>
-        <p id="subtitle">Sign up to see photos and videos from your friends.</p>
         
-        <!-- Registration Step 1: Email & Password -->
-        <form id="regStep1Form">
-            <input type="email" id="regEmail" placeholder="Mobile number or email" required>
-            <input type="password" id="regPassword" placeholder="Password (min 6 chars)" required>
-            <button type="submit">Next</button>
-            <div class="switch-text">Have an account? <a onclick="switchView('login')">Log in</a></div>
-        </form>
+        <div id="login-section">
+            <p>Sign in quickly with your Google account</p>
+            <button onclick="loginWithGoogle()" class="google-btn">Continue with Google</button>
+        </div>
 
-        <!-- Registration Step 2: Gmail Verification Code -->
-        <form id="regStep2Form" class="hidden">
-            <input type="text" id="regCode" placeholder="Enter 6-digit confirmation code" required>
-            <button type="submit">Confirm Code</button>
-        </form>
+        <div id="welcome-section">
+            <p id="user-greeting" style="color: #262626; font-weight: bold; font-size: 16px;"></p>
+            <p>🎉 You are successfully logged in!</p>
+            <a href="#" onclick="logout()" class="logout-btn">Log Out</a>
+        </div>
 
-        <!-- Registration Step 3: Username & Birthday -->
-        <form id="regStep3Form" class="hidden">
-            <input type="text" id="regUsername" placeholder="Create Username (min 3 chars)" required>
-            <p style="font-size:12px; margin:0 0 5px 0; text-align:left; color:#8e8e8e;">Birthday Date:</p>
-            <input type="date" id="regBirthday" required>
-            <button type="submit">Complete Sign Up</button>
-        </form>
-
-        <!-- Login Step 1: Email & Password -->
-        <form id="loginForm" class="hidden">
-            <input type="email" id="loginEmail" placeholder="Email address" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button type="submit">Next (Send Code)</button>
-            <div class="switch-text">Don't have an account? <a onclick="switchView('register')">Sign up</a></div>
-        </form>
-
-        <!-- Login Step 2: Gmail Verification Code -->
-        <form id="loginCodeForm" class="hidden">
-            <input type="text" id="loginCode" placeholder="Enter 6-digit Gmail code" required>
-            <button type="submit">Verify & Log In</button>
-        </form>
-        
         <div id="message"></div>
     </div>
 
-    <script>
-        let userEmail = '';
-        
-        const regStep1Form = document.getElementById('regStep1Form');
-        const regStep2Form = document.getElementById('regStep2Form');
-        const regStep3Form = document.getElementById('regStep3Form');
-        const loginForm = document.getElementById('loginForm');
-        const loginCodeForm = document.getElementById('loginCodeForm');
-        
-        const subtitle = document.getElementById('subtitle');
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAdB7QsZrUYPsVoagB-kfwh2_yBgGPzMsg",
+          authDomain: "twitter-app-d879c.firebaseapp.com",
+          projectId: "twitter-app-d879c",
+          storageBucket: "twitter-app-d879c.firebasestorage.app",
+          messagingSenderId: "836611938624",
+          appId: "1:836611938624:web:52e59fe1b7406f5175c2a5",
+          measurementId: "G-QFWCNNMDDL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const message = document.getElementById('message');
 
-        function switchView(view) {
-            message.textContent = '';
-            regStep1Form.classList.add('hidden');
-            regStep2Form.classList.add('hidden');
-            regStep3Form.classList.add('hidden');
-            loginForm.classList.add('hidden');
-            loginCodeForm.classList.add('hidden');
-
-            if (view === 'register') {
-                regStep1Form.classList.remove('hidden');
-                subtitle.textContent = 'Sign up to see photos and videos from your friends.';
-            } else if (view === 'reg-code') {
-                regStep2Form.classList.remove('hidden');
-                subtitle.textContent = 'Enter the code sent to your Gmail.';
-            } else if (view === 'reg-profile') {
-                regStep3Form.classList.remove('hidden');
-                subtitle.textContent = 'Add your username and birthday.';
-            } else if (view === 'login') {
-                loginForm.classList.remove('hidden');
-                subtitle.textContent = 'Log in with your credentials.';
-            } else if (view === 'login-code') {
-                loginCodeForm.classList.remove('hidden');
-                subtitle.textContent = 'Enter the code sent to your Gmail.';
-            }
-        }
-
-        // 1. Register Step 1
-        regStep1Form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            userEmail = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-
-            if (password.length < 6) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Password must be at least 6 characters.';
-                return;
-            }
-
+        window.loginWithGoogle = async () => {
+            const provider = new GoogleAuthProvider();
             message.style.color = '#8e8e8e';
-            message.textContent = 'Connecting & sending code (Render server may take a moment)...';
+            message.textContent = 'Opening Google sign-in...';
 
             try {
-                const res = await fetch('/api/register-step1', {
+                const result = await signInWithPopup(auth, provider);
+                const token = await result.user.getIdToken();
+                
+                // Send token to backend to sync with MongoDB
+                const res = await fetch('/api/auth/google', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, password })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    }
                 });
                 const data = await res.json();
 
                 if (data.success) {
-                    message.style.color = '#0095f6';
-                    message.textContent = 'Code sent to your Gmail!';
-                    switchView('reg-code');
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('welcome-section').style.display = 'block';
+                    document.getElementById('user-greeting').textContent = `Welcome, ${data.user.name || data.user.email}!`;
+                    message.textContent = '';
                 } else {
                     message.style.color = '#ed4956';
-                    message.textContent = '⚠️ ' + data.error;
+                    message.textContent = '⚠️ Authentication failed on server.';
                 }
-            } catch (err) {
+            } catch (error) {
+                console.error("Google login error", error);
                 message.style.color = '#ed4956';
-                message.textContent = '⚠️ Server connection error. Try clicking again.';
+                message.textContent = '⚠️ Sign-in cancelled or failed.';
             }
-        });
+        };
 
-        // 2. Register Step 2 (Verify Code)
-        regStep2Form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = document.getElementById('regCode').value.trim();
-
-            message.style.color = '#8e8e8e';
-            message.textContent = 'Verifying code...';
-
-            try {
-                const res = await fetch('/api/register-step2', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, code })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    message.style.color = '#0095f6';
-                    message.textContent = 'Code verified! Set up your profile.';
-                    switchView('reg-profile');
-                } else {
-                    message.style.color = '#ed4956';
-                    message.textContent = '⚠️ ' + data.error;
-                }
-            } catch (err) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Server connection error.';
-            }
-        });
-
-        // 3. Register Step 3 (Username & Birthday)
-        regStep3Form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('regUsername').value.trim();
-            const birthday = document.getElementById('regBirthday').value;
-
-            if (username.length < 3) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Username must be at least 3 characters.';
-                return;
-            }
-
-            message.style.color = '#8e8e8e';
-            message.textContent = 'Creating account...';
-
-            try {
-                const res = await fetch('/api/register-step3', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, username, birthday })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    message.style.color = '#0095f6';
-                    message.textContent = '🎉 Account created successfully! Please log in.';
-                    setTimeout(() => switchView('login'), 2000);
-                } else {
-                    message.style.color = '#ed4956';
-                    message.textContent = '⚠️ ' + data.error;
-                }
-            } catch (err) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Server connection error.';
-            }
-        });
-
-        // 4. Login Step 1
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            userEmail = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            message.style.color = '#8e8e8e';
-            message.textContent = 'Checking credentials & sending code...';
-
-            try {
-                const res = await fetch('/api/login-step1', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, password })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    message.style.color = '#0095f6';
-                    message.textContent = 'Code sent to Gmail!';
-                    switchView('login-code');
-                } else {
-                    message.style.color = '#ed4956';
-                    message.textContent = '⚠️ ' + data.error;
-                }
-            } catch (err) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Server connection error.';
-            }
-        });
-
-        // 5. Login Step 2
-        loginCodeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = document.getElementById('loginCode').value.trim();
-
-            message.style.color = '#8e8e8e';
-            message.textContent = 'Verifying code...';
-
-            try {
-                const res = await fetch('/api/login-step2', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, code })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    message.style.color = '#0095f6';
-                    message.textContent = '🎉 Logged in successfully!';
-                } else {
-                    message.style.color = '#ed4956';
-                    message.textContent = '⚠️ ' + data.error;
-                }
-            } catch (err) {
-                message.style.color = '#ed4956';
-                message.textContent = '⚠️ Server connection error.';
-            }
-        });
+        window.logout = async () => {
+            await signOut(auth);
+            location.reload();
+        };
     </script>
 </body>
 </html>
-
