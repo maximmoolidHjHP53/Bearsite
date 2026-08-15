@@ -2,7 +2,7 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const path = require('path');
 
 const app = express();
@@ -12,14 +12,9 @@ app.use(cors());
 // Serve static frontend files from root directory
 app.use(express.static(path.join(__dirname)));
 
-// Configure Gmail Transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'airmountcompany@gmail.com',
-    pass: 'fgxhxiruqckmmkfv'
-  }
-});
+// Initialize Resend with your API key
+// Initialize Resend using an environment variable for security
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const uri = "mongodb+srv://airmountcompany_db_user:8DcHOJXkjyZSRMPm@cluster0.2dihhnv.mongodb.net/?appName=Cluster0";
 const client = new MongoClient(uri);
@@ -31,7 +26,7 @@ async function startServer() {
     await client.connect();
     db = client.db("instaclone");
     usersCollection = db.collection("users");
-    console.log("Connected to MongoDB Atlas & ready for secure Gmail Auth!");
+    console.log("Connected to MongoDB Atlas & ready!");
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
@@ -46,7 +41,6 @@ startServer();
 
 // --- REGISTRATION FLOW ---
 
-// Register Step 1: Email & Password -> Sends Gmail Code
 app.post('/api/register-step1', async (req, res) => {
   const { email, password } = req.body;
 
@@ -55,6 +49,7 @@ app.post('/api/register-step1', async (req, res) => {
   }
 
   try {
+    console.log(`Processing registration for: ${email}`);
     const existingUser = await usersCollection.findOne({ email });
     if (existingUser && existingUser.isVerified) {
       return res.status(400).json({ success: false, error: 'Email is already registered. Please log in.' });
@@ -77,20 +72,27 @@ app.post('/api/register-step1', async (req, res) => {
       });
     }
 
-    await transporter.sendMail({
-      from: 'airmountcompany@gmail.com',
+    console.log(`Sending verification email via Resend to ${email}...`);
+    const { error } = await resend.emails.send({
+      from: 'onboarding@resend.dev',
       to: email,
       subject: 'Your InstaClone Verification Code',
-      text: `Your registration verification code is: ${code}`
+      html: `<p>Your registration verification code is: <strong>${code}</strong></p>`
     });
 
-    res.json({ success: true, message: 'Verification code sent to your Gmail!' });
+    if (error) {
+      console.error("Resend API Error:", error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    console.log(`Verification email sent successfully to ${email}`);
+    res.json({ success: true, message: 'Verification code sent to your email!' });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Error in /api/register-step1:", error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to send email.' });
   }
 });
 
-// Register Step 2: Verify Code
 app.post('/api/register-step2', async (req, res) => {
   const { email, code } = req.body;
 
@@ -106,7 +108,6 @@ app.post('/api/register-step2', async (req, res) => {
   }
 });
 
-// Register Step 3: Create Username & Birthday
 app.post('/api/register-step3', async (req, res) => {
   const { email, username, birthday } = req.body;
 
@@ -137,7 +138,6 @@ app.post('/api/register-step3', async (req, res) => {
 
 // --- LOGIN FLOW ---
 
-// Login Step 1: Verify Password & Send Code
 app.post('/api/login-step1', async (req, res) => {
   const { email, password } = req.body;
 
@@ -155,20 +155,24 @@ app.post('/api/login-step1', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     await usersCollection.updateOne({ email }, { $set: { code } });
 
-    await transporter.sendMail({
-      from: 'airmountcompany@gmail.com',
+    const { error } = await resend.emails.send({
+      from: 'onboarding@resend.dev',
       to: email,
       subject: 'Your InstaClone Login Verification Code',
-      text: `Your login verification code is: ${code}`
+      html: `<p>Your login verification code is: <strong>${code}</strong></p>`
     });
 
-    res.json({ success: true, message: 'Verification code sent to your Gmail!' });
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    res.json({ success: true, message: 'Verification code sent to your email!' });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Error in /api/login-session1:", error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to send email.' });
   }
 });
 
-// Login Step 2: Verify Code
 app.post('/api/login-step2', async (req, res) => {
   const { email, code } = req.body;
 
