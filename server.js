@@ -3,10 +3,14 @@ const { MongoClient } = require('mongodb');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Serve static frontend files (like index.html) from the root directory
+app.use(express.static(path.join(__dirname)));
 
 // Configure Gmail Transporter
 const transporter = nodemailer.createTransport({
@@ -29,8 +33,9 @@ async function startServer() {
     usersCollection = db.collection("users");
     console.log("Connected to MongoDB Atlas & ready for secure Gmail Auth!");
 
-    app.listen(3000, () => {
-      console.log("Backend server running on http://localhost:3000");
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Backend server running on port ${PORT}`);
     });
   } catch (error) {
     console.error("Failed to connect to database", error);
@@ -124,4 +129,3 @@ app.post('/api/login-step2', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
