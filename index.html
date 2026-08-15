@@ -3,121 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaClone - Welcome</title>
+    <title>InstaClone - Secure Auth</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fafafa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: white;
-            padding: 40px;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            text-align: center;
-            width: 320px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        h1 {
-            font-family: cursive;
-            font-size: 38px;
-            margin-bottom: 10px;
-            color: #262626;
-        }
-        p {
-            color: #8e8e8e;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #dbdbdb;
-            border-radius: 4px;
-            box-sizing: border-box;
-            background: #fafafa;
-            font-size: 14px;
-        }
-        input:focus {
-            border-color: #a8a8a8;
-            outline: none;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #0095f6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        button:hover {
-            background-color: #1877f2;
-        }
-        #responseMessage {
-            margin-top: 15px;
-            font-size: 13px;
-        }
+        body { font-family: Arial, sans-serif; background-color: #fafafa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border: 1px solid #dbdbdb; border-radius: 8px; text-align: center; width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1 { font-family: cursive; font-size: 38px; margin-bottom: 5px; color: #262626; }
+        p { color: #8e8e8e; font-size: 14px; margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #dbdbdb; border-radius: 4px; box-sizing: border-box; background: #fafafa; font-size: 14px; }
+        input:focus { border-color: #a8a8a8; outline: none; }
+        button { width: 100%; padding: 10px; background-color: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 5px; }
+        button:hover { background-color: #1877f2; }
+        #message { margin-top: 15px; font-size: 13px; font-weight: bold; }
+        .switch-text { margin-top: 20px; font-size: 13px; color: #262626; }
+        .switch-text a { color: #0095f6; text-decoration: none; font-weight: bold; cursor: pointer; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>InstaClone</h1>
-        <p>Sign up to see photos and videos from your friends.</p>
+        <p id="subtitle">Sign up to see photos and videos from your friends.</p>
         
-        <form id="signupForm">
-            <input type="email" id="emailInput" placeholder="Enter your email address" required>
+        <!-- Registration Form -->
+        <form id="registerForm">
+            <input type="text" id="regUsername" placeholder="Username (min 3 chars)" required>
+            <input type="email" id="regEmail" placeholder="Email address" required>
+            <input type="password" id="regPassword" placeholder="Password (min 6 chars)" required>
+            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
             <button type="submit">Sign Up</button>
+            <div class="switch-text">Have an account? <a onclick="switchView('login')">Log in</a></div>
+        </form>
+
+        <!-- Login Step 1: Email & Password -->
+        <form id="loginForm" class="hidden">
+            <input type="email" id="loginEmail" placeholder="Email address" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Next (Send Code)</button>
+            <div class="switch-text">Don't have an account? <a onclick="switchView('register')">Sign up</a></div>
+        </form>
+
+        <!-- Login Step 2: Gmail Verification Code -->
+        <form id="codeForm" class="hidden">
+            <input type="text" id="codeInput" placeholder="Enter 6-digit Gmail code" required>
+            <button type="submit">Verify & Log In</button>
         </form>
         
-        <div id="responseMessage"></div>
+        <div id="message"></div>
     </div>
 
     <script>
-        const form = document.getElementById('signupForm');
-        const messageDiv = document.getElementById('responseMessage');
+        let userEmail = '';
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.getElementById('loginForm');
+        const codeForm = document.getElementById('codeForm');
+        const subtitle = document.getElementById('subtitle');
+        const message = document.getElementById('message');
 
-        form.addEventListener('submit', async (e) => {
+        function switchView(view) {
+            message.textContent = '';
+            registerForm.classList.add('hidden');
+            loginForm.classList.add('hidden');
+            codeForm.classList.add('hidden');
+
+            if (view === 'login') {
+                loginForm.classList.remove('hidden');
+                subtitle.textContent = 'Log in with your credentials.';
+            } else if (view === 'register') {
+                registerForm.classList.remove('hidden');
+                subtitle.textContent = 'Sign up to see photos and videos from your friends.';
+            } else if (view === 'code') {
+                codeForm.classList.remove('hidden');
+                subtitle.textContent = 'Enter the code sent to your Gmail.';
+            }
+        }
+
+        // 1. Handle Registration with Security Checks
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('emailInput').value;
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
 
-            messageDiv.style.color = '#8e8e8e';
-            messageDiv.textContent = 'Submitting...';
+            if (username.length < 3) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Username is too short (minimum 3 characters).';
+                return;
+            }
+            if (password.length < 6) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Password is too short (minimum 6 characters).';
+                return;
+            }
+            if (password !== confirmPassword) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Passwords do not match!';
+                return;
+            }
+
+            message.style.color = '#8e8e8e';
+            message.textContent = 'Creating account...';
 
             try {
-                const response = await fetch('http://localhost:3000/api/subscribe', {
+                const res = await fetch('http://localhost:3000/api/register', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
                 });
-
-                const data = await response.json();
+                const data = await res.json();
 
                 if (data.success) {
-                    messageDiv.style.color = '#0095f6';
-                    messageDiv.textContent = 'Success! Welcome aboard.';
-                    form.reset();
+                    message.style.color = '#0095f6';
+                    message.textContent = 'Success! Account created. Please log in.';
+                    setTimeout(() => switchView('login'), 1500);
                 } else {
-                    messageDiv.style.color = '#ed4956';
-                    messageDiv.textContent = 'Error: ' + data.error;
+                    message.style.color = '#ed4956';
+                    message.textContent = '⚠️ ' + data.error;
                 }
-            } catch (error) {
-                messageDiv.style.color = '#ed4956';
-                messageDiv.textContent = 'Failed to connect to backend server.';
+            } catch (err) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Server connection error.';
+            }
+        });
+
+        // 2. Handle Login Step 1 (Password check + trigger email code)
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            userEmail = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            message.style.color = '#8e8e8e';
+            message.textContent = 'Checking credentials & sending code...';
+
+            try {
+                const res = await fetch('http://localhost:3000/api/login-step1', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    message.style.color = '#0095f6';
+                    message.textContent = 'Code sent to Gmail!';
+                    switchView('code');
+                } else {
+                    message.style.color = '#ed4956';
+                    message.textContent = '⚠️ ' + data.error;
+                }
+            } catch (err) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Server connection error.';
+            }
+        });
+
+        // 3. Handle Login Step 2 (Verify Gmail Code)
+        codeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('codeInput').value.trim();
+
+            message.style.color = '#8e8e8e';
+            message.textContent = 'Verifying code...';
+
+            try {
+                const res = await fetch('http://localhost:3000/api/login-step2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, code })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    message.style.color = '#0095f6';
+                    message.textContent = '🎉 Logged in successfully!';
+                } else {
+                    message.style.color = '#ed4956';
+                    message.textContent = '⚠️ ' + data.error;
+                }
+            } catch (err) {
+                message.style.color = '#ed4956';
+                message.textContent = '⚠️ Server connection error.';
             }
         });
     </script>
-
 </body>
 </html>
+
