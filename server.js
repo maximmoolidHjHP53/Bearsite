@@ -29,7 +29,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serve public assets (CSS, JS, images, index.html)
+// Serve public assets (CSS, JS, images, HTML files)
 app.use(express.static(path.join(__dirname)));
 
 const uri = process.env.MONGO_URI;
@@ -63,6 +63,10 @@ app.get('/home.html', ensureAuthenticated, (req, res) => {
 
 app.get('/creation.html', ensureAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'creation.html'));
+});
+
+app.get('/notification.html', ensureAuthenticated, (req, res) => {
+  res.sendFile(path.join(__dirname, 'notification.html'));
 });
 
 // --- PASSPORT SERIALIZATION ---
@@ -124,6 +128,12 @@ app.get('/auth/google/callback',
   }
 );
 
+app.get('/auth/logout', (req, res) => {
+  req.logout(() => {
+    res.redirect('/');
+  });
+});
+
 // --- PROFILE COMPLETION ROUTE ---
 app.post('/api/complete-profile', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
@@ -145,7 +155,7 @@ app.post('/api/complete-profile', async (req, res) => {
 
   await usersCollection.updateOne(
     { _id: req.user._id },
-    { $set: { username, birthday, profilePicture, profileCompleted: true } }
+    { $set: { username, birthday, age, profilePicture, profileCompleted: true } }
   );
   res.json({ success: true });
 });
@@ -469,6 +479,39 @@ app.post('/api/notifications/:id/read', async (req, res) => {
   }
 });
 
+// --- DELETE ACCOUNT ROUTE (FOR TESTING PURPOSES) ---
+app.delete('/api/account', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false, message: 'Unauthorized' });
+  
+  try {
+    const userId = req.user._id;
+
+    // 1. Delete the user from the users collection
+    await usersCollection.deleteOne({ _id: userId });
+
+    // 2. Delete all posts created by this user
+    await postsCollection.deleteMany({ userId: userId });
+
+    // 3. Delete all notifications sent to or sent by this user
+    await notificationsCollection.deleteMany({
+      $or: [{ userId: userId }, { senderId: userId }]
+    });
+
+    // 4. Log out and destroy session
+    req.logout((err) => {
+      if (err) return res.status(500).json({ success: false, message: 'Logout error' });
+      req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.json({ success: true });
+      });
+    });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    res.status(500).json({ success: false, message: 'Server error deleting account' });
+  }
+});
+
+
 // --- COLLAB RESPONSE ROUTE ---
 app.post('/api/posts/:postId/collab-response', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
@@ -493,12 +536,7 @@ app.post('/api/posts/:postId/collab-response', async (req, res) => {
   }
 });
 
-app.get('/auth/logout', (req, res) => {
-  req.logout(() => {
-    res.redirect('/');
-  });
-});
-
+// --- START SERVER ---
 async function startServer() {
   try {
     await client.connect();
