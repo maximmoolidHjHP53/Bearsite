@@ -17,19 +17,49 @@
         /* Container */
         .container { max-width: 680px; margin: 20px auto; padding: 0 10px; }
 
-        /* Create Post Card */
+        /* Create Post Card Trigger */
         .card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 12px 16px; margin-bottom: 16px; }
-        .post-input-box { display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #e4e6eb; padding-bottom: 12px; }
-        .post-input-box img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .post-input-box textarea { width: 100%; border: none; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; resize: none; font-size: 15px; outline: none; }
+        .post-input-trigger { display: flex; gap: 10px; align-items: center; }
+        .post-input-trigger img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .post-input-trigger .fake-input { width: 100%; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; color: #65676b; font-size: 15px; cursor: pointer; }
+        .post-input-trigger .fake-input:hover { background: #e4e6eb; }
+
+        /* Facebook-style Posting Modal */
+        #create-post-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 20px; }
+        .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
         
-        .post-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; }
-        .upload-label { cursor: pointer; color: #42b72a; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
-        .post-btn { background: #1877f2; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .modal-body { padding: 16px; max-height: 70vh; overflow-y: auto; }
+        .modal-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .modal-user-row img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .modal-textarea { width: 100%; border: none; outline: none; font-size: 16px; resize: none; font-family: inherit; }
+
+        #modal-media-preview { margin-top: 10px; position: relative; max-height: 250px; overflow: hidden; border-radius: 8px; display: none; }
+        #modal-media-preview img, #modal-media-preview video { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; }
+
+        .modal-add-box { display: flex; justify-content: space-between; align-items: center; border: 1px solid #e4e6eb; border-radius: 8px; padding: 8px 12px; margin-top: 15px; }
+        .modal-add-box span { font-weight: bold; font-size: 14px; color: #050505; }
+        .modal-tools { display: flex; gap: 10px; align-items: center; }
+        
+        .code-upload-label { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #f0f2f5; transition: background 0.2s; }
+        .code-upload-label:hover { background: #e4e6eb; }
+
+        .collab-btn { background: #f0f2f5; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: #050505; transition: background 0.2s; }
+        .collab-btn:hover { background: #e4e6eb; }
+
+        .modal-footer { padding: 12px 16px; border-top: 1px solid #e4e6eb; }
+        .post-btn { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; }
         .post-btn:disabled { background: #e4e6eb; color: #bcc0c4; cursor: not-allowed; }
-        
-        #media-preview { margin-top: 10px; position: relative; max-height: 300px; overflow: hidden; border-radius: 8px; display: none; }
-        #media-preview img, #media-preview video { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; }
+
+        /* Collab Friends Selection Modal */
+        #collab-friends-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center; }
+        .friends-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; }
+        .friend-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
+        .friend-item:hover { background: #f0f2f5; }
+        .friend-info { display: flex; align-items: center; gap: 10px; }
+        .friend-info img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+        .friend-name { font-weight: bold; font-size: 14px; }
 
         /* Post Feed Cards */
         .feed-post { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 16px; padding: 12px 16px; }
@@ -77,8 +107,8 @@
         .reply-input-wrapper { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 15px; padding-right: 6px; }
         .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; }
 
-        /* Loading Popup Overlay */
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
+        /* Loading Popup Overlay (For Post & Initial Load) */
+        #loading-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
         .loading-box { background: white; padding: 24px 32px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-weight: bold; font-size: 16px; color: #262626; display: flex; align-items: center; gap: 12px; }
         .spinner { width: 20px; height: 20px; border: 3px solid #dbdbdb; border-top: 3px solid #1877f2; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -90,7 +120,65 @@
     <div id="loading-overlay">
         <div class="loading-box">
             <div class="spinner"></div>
-            Waiting for posting...
+            <span id="loading-text">Loading resources...</span>
+        </div>
+    </div>
+
+    <!-- Facebook-style Create Post Modal -->
+    <div id="create-post-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Create post</span>
+                <button class="modal-close-btn" onclick="closePostModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-user-row">
+                    <img id="modal-creator-pic" src="" alt="User">
+                    <div>
+                        <div id="modal-creator-name" style="font-weight: bold; font-size: 15px;"></div>
+                        <div id="modal-collab-tag" style="font-size: 13px; color: #65676b; display: none;"></div>
+                    </div>
+                </div>
+                <textarea id="modal-post-text" class="modal-textarea" placeholder="What's on your mind?" rows="4" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+                
+                <div id="modal-media-preview">
+                    <button onclick="clearModalMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; z-index: 10;">×</button>
+                </div>
+
+                <div class="modal-add-box">
+                    <span>Add to your post</span>
+                    <div class="modal-tools">
+                        <!-- Code Icon for Media Upload (No Emoji) -->
+                        <label class="code-upload-label" title="Upload Code/Media">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <input type="file" id="modal-media-file" accept="image/*,video/*" style="display: none;">
+                        </label>
+                        <!-- Collab Button -->
+                        <button type="button" class="collab-btn" onclick="openCollabModal()">
+                            🤝 Collab
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-submit-btn" class="post-btn" disabled onclick="createPost()">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collab Friends Modal (Friends Only) -->
+    <div id="collab-friends-modal">
+        <div class="friends-modal-content">
+            <div class="modal-header" style="font-size: 16px;">
+                <span>Select Collab Friend</span>
+                <button class="modal-close-btn" style="width: 26px; height: 26px; font-size: 14px;" onclick="closeCollabModal()">×</button>
+            </div>
+            <div id="friends-list-container" style="max-height: 250px; overflow-y: auto; padding: 4px 0;">
+                <!-- Dynamically populated friends list -->
+            </div>
+            <div style="padding: 10px 16px; border-top: 1px solid #e4e6eb; text-align: right;">
+                <button onclick="closeCollabModal()" style="background: #1877f2; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">Done</button>
+            </div>
         </div>
     </div>
 
@@ -102,23 +190,11 @@
     </header>
 
     <div class="container">
-        <!-- Create Post Box -->
+        <!-- Create Post Trigger Card -->
         <div class="card">
-            <div class="post-input-box">
-                <img id="creator-pic" src="" alt="User">
-                <textarea id="post-text" placeholder="What's on your mind?" rows="2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
-            </div>
-            
-            <div id="media-preview">
-                <button onclick="clearMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">×</button>
-            </div>
-
-            <div class="post-actions">
-                <label class="upload-label">
-                    📷 Photo/Video
-                    <input type="file" id="media-file" accept="image/*,video/*" style="display: none;">
-                </label>
-                <button id="submit-post-btn" class="post-btn" disabled onclick="createPost()">Post</button>
+            <div class="post-input-trigger" onclick="openPostModal()">
+                <img id="feed-creator-pic" src="" alt="User">
+                <div class="fake-input" id="fake-input-text">What's on your mind?</div>
             </div>
         </div>
 
@@ -132,9 +208,15 @@
         let currentUser = null;
         let selectedMediaBase64 = '';
         let selectedMediaType = '';
+        let selectedCollabFriend = null;
         let postsCache = [];
 
         async function initPage() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingOverlay.style.display = 'flex';
+            loadingText.textContent = 'Loading resources...';
+
             try {
                 const res = await fetch('/api/current-user');
                 const data = await res.json();
@@ -143,60 +225,121 @@
                     return;
                 }
                 currentUser = data.user;
-                document.getElementById('creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
+                document.getElementById('feed-creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
                 document.getElementById('user-nav').innerHTML = `
                     <img src="${currentUser.profilePicture || 'https://via.placeholder.com/36'}" alt="Profile">
                     <span style="font-weight: bold; font-size: 14px;">${currentUser.username}</span>
                     <a href="/auth/logout" class="logout-btn">Logout</a>
                 `;
-                loadPosts();
+                await loadPosts();
             } catch (err) {
                 console.error("Initialization error", err);
+            } finally {
+                loadingOverlay.style.display = 'none';
             }
         }
 
-        document.getElementById('media-file').addEventListener('change', (e) => {
+        function openPostModal() {
+            document.getElementById('modal-creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
+            document.getElementById('modal-creator-name').textContent = currentUser.username;
+            document.getElementById('create-post-modal').style.display = 'flex';
+            document.getElementById('modal-post-text').focus();
+        }
+
+        function closePostModal() {
+            document.getElementById('create-post-modal').style.display = 'none';
+        }
+
+        async function openCollabModal() {
+            const friendsModal = document.getElementById('collab-friends-modal');
+            const container = document.getElementById('friends-list-container');
+            container.innerHTML = '<div style="padding: 12px; text-align: center; color: #65676b; font-size: 13px;">Loading friends...</div>';
+            friendsModal.style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/friends');
+                const data = await res.json();
+                if (data.success && data.friends && data.friends.length > 0) {
+                    container.innerHTML = '';
+                    data.friends.forEach(friend => {
+                        const div = document.createElement('div');
+                        div.className = 'friend-item';
+                        div.onclick = () => selectCollabFriend(friend);
+                        div.innerHTML = `
+                            <div class="friend-info">
+                                <img src="${friend.profilePicture || 'https://via.placeholder.com/36'}" alt="Friend">
+                                <span class="friend-name">${friend.username}</span>
+                            </div>
+                            <input type="radio" name="collab-radio" ${selectedCollabFriend && selectedCollabFriend._id === friend._id ? 'checked' : ''}>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 16px; text-align: center; color: #65676b; font-size: 13px;">No friends found.</div>';
+                }
+            } catch (err) {
+                console.error("Error fetching friends", err);
+                container.innerHTML = '<div style="padding: 16px; text-align: center; color: #65676b; font-size: 13px;">Failed to load friends.</div>';
+            }
+        }
+
+        function closeCollabModal() {
+            document.getElementById('collab-friends-modal').style.display = 'none';
+        }
+
+        function selectCollabFriend(friend) {
+            selectedCollabFriend = friend;
+            const collabTag = document.getElementById('modal-collab-tag');
+            collabTag.style.display = 'block';
+            collabTag.textContent = `with ${friend.username}`;
+            closeCollabModal();
+        }
+
+        document.getElementById('modal-media-file').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 selectedMediaType = file.type.startsWith('video') ? 'video' : 'image';
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     selectedMediaBase64 = event.target.result;
-                    const previewDiv = document.getElementById('media-preview');
+                    const previewDiv = document.getElementById('modal-media-preview');
                     previewDiv.style.display = 'block';
                     if (selectedMediaType === 'video') {
-                        previewDiv.innerHTML = `<button onclick="clearMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button><video src="${selectedMediaBase64}"></video>`;
+                        previewDiv.innerHTML = `<button onclick="clearModalMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button><video src="${selectedMediaBase64}"></video>`;
                     } else {
-                        previewDiv.innerHTML = `<button onclick="clearMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button><img src="${selectedMediaBase64}" alt="Preview">`;
+                        previewDiv.innerHTML = `<button onclick="clearModalMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button><img src="${selectedMediaBase64}" alt="Preview">`;
                     }
-                    checkPostReady();
+                    checkModalPostReady();
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        function clearMedia() {
+        function clearModalMedia() {
             selectedMediaBase64 = '';
             selectedMediaType = '';
-            document.getElementById('media-file').value = '';
-            const previewDiv = document.getElementById('media-preview');
+            document.getElementById('modal-media-file').value = '';
+            const previewDiv = document.getElementById('modal-media-preview');
             previewDiv.style.display = 'none';
             previewDiv.innerHTML = '';
-            checkPostReady();
+            checkModalPostReady();
         }
 
-        document.getElementById('post-text').addEventListener('input', checkPostReady);
+        document.getElementById('modal-post-text').addEventListener('input', checkModalPostReady);
 
-        function checkPostReady() {
-            const text = document.getElementById('post-text').value.trim();
-            const btn = document.getElementById('submit-post-btn');
+        function checkModalPostReady() {
+            const text = document.getElementById('modal-post-text').value.trim();
+            const btn = document.getElementById('modal-submit-btn');
             btn.disabled = !(text || selectedMediaBase64);
         }
 
         async function createPost() {
-            const content = document.getElementById('post-text').value.trim();
+            const content = document.getElementById('modal-post-text').value.trim();
             const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingText.textContent = 'Waiting for posting...';
             loadingOverlay.style.display = 'flex';
+            closePostModal();
 
             try {
                 const res = await fetch('/api/posts', {
@@ -205,14 +348,16 @@
                     body: JSON.stringify({
                         content,
                         mediaUrl: selectedMediaBase64,
-                        mediaType: selectedMediaType
+                        mediaType: selectedMediaType,
+                        collabWith: selectedCollabFriend ? selectedCollabFriend._id : null
                     })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    document.getElementById('post-text').value = '';
-                    clearMedia();
-                    // Reload page automatically when loading animation disappears to show the new post at the top
+                    document.getElementById('modal-post-text').value = '';
+                    clearModalMedia();
+                    selectedCollabFriend = null;
+                    document.getElementById('modal-collab-tag').style.display = 'none';
                     window.location.reload();
                 }
             } catch (err) {
@@ -234,7 +379,6 @@
             }
         }
 
-        // Toggle Video Play/Pause without native 3-dots or download menus
         function toggleVideoPlay(containerElement) {
             const video = containerElement.querySelector('video');
             const playIcon = containerElement.querySelector('.video-play-icon');
@@ -266,6 +410,11 @@
                     } else {
                         mediaHtml = `<div class="post-media" oncontextmenu="return false;"><img src="${post.mediaUrl}" alt="Post image"></div>`;
                     }
+                }
+
+                let authorText = post.userName;
+                if (post.collabWithName) {
+                    authorText += ` is collaborating with ${post.collabWithName}`;
                 }
 
                 let commentsHtml = '';
@@ -316,7 +465,7 @@
                     <div class="post-header">
                         <img src="${post.userProfilePic || 'https://via.placeholder.com/40'}" alt="Author">
                         <div>
-                            <div class="post-author">${post.userName}</div>
+                            <div class="post-author">${authorText}</div>
                             <div class="post-time">${new Date(post.createdAt).toLocaleDateString()}</div>
                         </div>
                     </div>
@@ -351,7 +500,6 @@
             });
         }
 
-        // Fast Instant Like Toggle (Optimistic UI)
         async function toggleLike(postId) {
             const post = postsCache.find(p => p._id === postId);
             if (!post) return;
@@ -366,7 +514,6 @@
                 post.likes.push(currentUser._id);
             }
 
-            // Instantly update DOM without waiting
             const likeCountSpan = document.getElementById(`like-count-${postId}`);
             const likeBtn = document.getElementById(`like-btn-${postId}`);
             likeCountSpan.textContent = post.likes.length;
@@ -378,7 +525,6 @@
                 likeBtn.querySelector('svg').setAttribute('fill', 'currentColor');
             }
 
-            // Background sync
             try {
                 await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
             } catch (err) {
@@ -392,13 +538,12 @@
             }
         }
 
-        // Fast Instant Comment Submission
         async function submitComment(postId) {
             const input = document.getElementById(`comment-input-${postId}`);
             const text = input.value.trim();
             if (!text) return;
 
-            input.value = ''; // clear instantly
+            input.value = '';
 
             const post = postsCache.find(p => p._id === postId);
             if (!post) return;
@@ -414,7 +559,6 @@
             if (!post.comments) post.comments = [];
             post.comments.push(tempComment);
 
-            // Instantly append to DOM
             const commentsList = document.getElementById(`comments-list-${postId}`);
             const commentDiv = document.createElement('div');
             commentDiv.className = 'comment-item';
@@ -439,11 +583,9 @@
             `;
             commentsList.appendChild(commentDiv);
 
-            // Update comment count
             const countSpan = document.querySelector(`[id='comment-count-${postId}']`);
             if (countSpan) countSpan.textContent = post.comments.length;
 
-            // Background sync
             try {
                 const res = await fetch(`/api/posts/${postId}/comment`, {
                     method: 'POST',
@@ -452,7 +594,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    loadPosts(); // Silent sync in background
+                    loadPosts();
                 }
             } catch (err) {
                 console.error("Error posting comment", err);
@@ -472,14 +614,12 @@
                 submitReply(postId, commentId);
             }
         }
-
-        // Fast Instant Reply Submission
-        async function submitReply(postId, commentId) {
+      async function submitReply(postId, commentId) {
             const input = document.getElementById(`reply-input-${commentId}`);
             const text = input.value.trim();
             if (!text) return;
 
-            input.value = ''; // clear instantly
+            input.value = '';
 
             const post = postsCache.find(p => p._id === postId);
             if (!post) return;
@@ -495,7 +635,6 @@
             if (!comment.replies) comment.replies = [];
             comment.replies.push(tempReply);
 
-            // Instantly append to DOM
             const repliesList = document.getElementById(`replies-list-${commentId}`);
             const replyDiv = document.createElement('div');
             replyDiv.className = 'reply-item';
@@ -508,7 +647,6 @@
             `;
             repliesList.appendChild(replyDiv);
 
-            // Background sync
             try {
                 const res = await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
                     method: 'POST',
@@ -517,7 +655,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    loadPosts(); // Silent sync in background
+                    loadPosts();
                 }
             } catch (err) {
                 console.error("Error posting reply", err);
