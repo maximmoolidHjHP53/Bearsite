@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaClone - Create Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #fafafa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px 30px; border: 1px solid #dbdbdb; border-radius: 8px; text-align: center; width: 360px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { margin-bottom: 20px; color: #262626; }
+        
+        /* Circular Profile Picture Upload */
+        .profile-container { position: relative; width: 100px; height: 100px; margin: 0 auto 20px auto; }
+        .profile-pic { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #dbdbdb; background-color: #efefef; display: flex; align-items: center; justify-content: center; color: #8e8e8e; font-size: 12px; cursor: pointer; overflow: hidden; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+        input[type="file"] { display: none; }
+
+        .input-field { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #dbdbdb; border-radius: 4px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
+        .input-field:focus { border-color: #a8a8a8; outline: none; background: white; }
+        
+        label { display: block; text-align: left; font-size: 12px; color: #8e8e8e; margin-bottom: 5px; font-weight: bold; }
+
+        .continue-btn { width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; font-size: 14px; background-color: #0095f6; color: white; cursor: pointer; margin-top: 10px; }
+        .continue-btn:disabled { background-color: #b2dffc; cursor: not-allowed; }
+        
+        #error-msg { color: #ed4956; font-size: 13px; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Complete Your Profile</h2>
+        
+        <form id="profile-form">
+            <!-- Circular Profile Picture Upload -->
+            <div class="profile-container">
+                <label for="file-input" class="profile-pic" id="pic-preview">Add Photo</label>
+                <input type="file" id="file-input" accept="image/*">
+            </div>
+
+            <label for="username">Username</label>
+            <input type="text" id="username" class="input-field" placeholder="Enter username" required>
+
+            <label for="birthday">Birthday (Age Verification)</label>
+            <input type="date" id="birthday" class="input-field" required>
+
+            <button type="submit" id="continue-btn" class="continue-btn" disabled>Continue</button>
+        </form>
+
+        <div id="error-msg"></div>
+    </div>
+
+    <script>
+        // --- NAVIGATION SECURITY (Prevent Back Button Bypass) ---
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+            location.reload();
+        };
+
+        const fileInput = document.getElementById('file-input');
+        const picPreview = document.getElementById('pic-preview');
+        const usernameInput = document.getElementById('username');
+        const birthdayInput = document.getElementById('birthday');
+        const continueBtn = document.getElementById('continue-btn');
+        const errorMsg = document.getElementById('error-msg');
+
+        let base64Image = '';
+
+        // Handle Image Upload & Convert to Base64
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    base64Image = uploadEvent.target.result;
+                    picPreview.innerHTML = `<img src="${base64Image}" alt="Profile">`;
+                    validateForm();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Real-time form validation (Continue button disabled until all fields are filled)
+        function validateForm() {
+            const username = usernameInput.value.trim();
+            const birthday = birthdayInput.value;
+
+            if (username && birthday && base64Image) {
+                continueBtn.disabled = false;
+            } else {
+                continueBtn.disabled = true;
+            }
+        }
+
+        usernameInput.addEventListener('input', validateForm);
+        birthdayInput.addEventListener('change', validateForm);
+
+        // Handle Form Submission
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            continueBtn.disabled = true;
+            continueBtn.textContent = 'Saving...';
+            errorMsg.textContent = '';
+
+            try {
+                const response = await fetch('/api/complete-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: usernameInput.value.trim(),
+                        birthday: birthdayInput.value,
+                        profilePicture: base64Image
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    if (data.underAge) {
+                        alert("You cannot access on this apps or web");
+                        window.location.href = '/'; // Redirect back to login page
+                    } else {
+                        errorMsg.textContent = data.message || 'Something went wrong.';
+                        continueBtn.disabled = false;
+                        continueBtn.textContent = 'Continue';
+                    }
+                } else {
+                    // Successfully saved, proceed to home page
+                    window.location.href = '/home.html';
+                }
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = 'Connection error. Please try again.';
+                continueBtn.disabled = false;
+                continueBtn.textContent = 'Continue';
+            }
+        });
+    </script>
+</body>
+</html>
