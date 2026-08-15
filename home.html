@@ -18,7 +18,6 @@
             content-visibility: auto;
         }
         
-        /* Navbar */
         header { background: white; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .logo { font-family: cursive; font-size: 28px; color: #262626; font-weight: bold; }
         .user-nav { display: flex; align-items: center; gap: 10px; }
@@ -28,22 +27,19 @@
         .nav-icon-btn:hover { background: #e4e6eb; }
         .notif-badge { position: absolute; top: -2px; right: -2px; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid white; display: none; }
         
-        /* Logout Circle Button */
         .logout-icon-btn { background: #f0f2f5; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #050505; transition: background 0.2s; }
         .logout-icon-btn:hover { background: #e4e6eb; }
 
-        /* Container */
         .container { max-width: 680px; margin: 20px auto; padding: 0 10px; }
 
-        /* Create Post Card Trigger */
         .card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 12px 16px; margin-bottom: 16px; content-visibility: auto; }
         .post-input-trigger { display: flex; gap: 10px; align-items: center; }
         .post-input-trigger img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .post-input-trigger .fake-input { width: 100%; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; color: #65676b; font-size: 15px; cursor: pointer; }
         .post-input-trigger .fake-input:hover { background: #e4e6eb; }
 
-        /* Modals Overlay - Strictly anchored, centered, and fixed to screen viewport */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+        /* Modals Overlay - Strictly anchored, centered, fixed, non-scrollable background */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 16px; overflow: hidden; }
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
         .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 20px; flex-shrink: 0; }
         .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
@@ -77,7 +73,6 @@
         .post-btn { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; text-align: center; }
         .post-btn:disabled { background: #e4e6eb; color: #bcc0c4; cursor: not-allowed; }
 
-        /* Collab Friends Selection Modal */
         .friends-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; max-height: 85vh; }
         .friend-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
         .friend-item:hover { background: #f0f2f5; }
@@ -85,7 +80,6 @@
         .friend-info img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
         .friend-name { font-weight: bold; font-size: 14px; }
 
-        /* User Profile Modal Styles */
         .profile-modal-content { background: white; width: 100%; max-width: 520px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 85vh; }
         .profile-header-center { display: flex; flex-direction: column; align-items: center; padding: 20px; border-bottom: 1px solid #e4e6eb; text-align: center; background: #fff; flex-shrink: 0; }
         .profile-header-center img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
@@ -96,7 +90,6 @@
         .btn-decline-friend { background: #e4e6eb; color: #050505; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .profile-posts-scroll { padding: 16px; overflow-y: auto; background: #f0f2f5; flex: 1; }
 
-        /* Post Feed Cards */
         .feed-post { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 16px; padding: 12px 16px; content-visibility: auto; }
         .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; position: relative; }
         .post-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
@@ -109,7 +102,6 @@
         
         .post-body { font-size: 15px; margin-bottom: 10px; line-height: 1.5; white-space: pre-wrap; }
         
-        /* Post Media Grid */
         .post-media-grid { display: grid; gap: 3px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: #000; max-height: 450px; width: 100%; }
         .post-media-grid.grid-1 { grid-template-columns: 1fr; }
         .post-media-grid.grid-2 { grid-template-columns: 1fr 1fr; }
@@ -120,14 +112,12 @@
         .grid-item { position: relative; width: 100%; height: 100%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; }
         .grid-item img { width: 100%; height: 100%; object-fit: cover; min-height: 180px; max-height: 420px; display: block; }
 
-        /* Metrics & Action buttons */
         .post-stats { display: flex; justify-content: space-between; color: #65676b; font-size: 13px; padding-bottom: 8px; border-bottom: 1px solid #e4e6eb; }
         .post-action-bar { display: flex; justify-content: space-around; padding: 4px 0; border-bottom: 1px solid #e4e6eb; margin-bottom: 10px; }
         .action-btn { background: none; border: none; font-weight: bold; color: #65676b; cursor: pointer; padding: 8px; width: 100%; border-radius: 4px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .action-btn:hover { background: #f0f2f5; }
         .action-btn.liked { color: #1877f2; }
 
-        /* Comments Section */
         .comments-section { margin-top: 10px; }
         .comment-input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
         .comment-input-row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
@@ -152,7 +142,6 @@
         .reply-input-wrapper { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 15px; padding-right: 6px; }
         .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; }
 
-        /* Options Action Sheet Modal (Centered and Fixed on screen) */
         .options-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; padding: 8px 0; animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         
@@ -160,10 +149,8 @@
         .option-item:hover { background: #f0f2f5; }
         .option-item.danger { color: #e41e3f; }
 
-        /* Logout Settings Modal Content */
         .logout-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; padding: 20px; text-align: center; }
 
-        /* Custom Popup Toast Alert Notification */
         #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; align-items: center; }
         .toast-alert { background: #242526; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 10px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: auto; }
         .toast-alert.success { background: #1877f2; }
@@ -171,7 +158,6 @@
         @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
 
-        /* Loading Popup Overlay */
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
         .loading-box { background: white; padding: 24px 32px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-weight: bold; font-size: 16px; color: #262626; display: flex; align-items: center; gap: 12px; }
         .spinner { width: 20px; height: 20px; border: 3px solid #dbdbdb; border-top: 3px solid #1877f2; border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -180,10 +166,8 @@
 </head>
 <body>
 
-    <!-- Custom Toast Alert Container -->
     <div id="toast-container"></div>
 
-    <!-- Loading Popup Overlay -->
     <div id="loading-overlay">
         <div class="loading-box">
             <div class="spinner"></div>
@@ -229,7 +213,7 @@
         </div>
     </div>
 
-    <!-- Collab Friends Selection Modal -->
+    <!-- Collab Friends Modal -->
     <div id="collab-friends-modal" class="modal-overlay" onclick="if(event.target === this) closeCollabModal()">
         <div class="friends-modal-content">
             <div class="modal-header" style="font-size: 16px;">
@@ -260,18 +244,10 @@
         </div>
     </div>
 
-  <button id="deleteAccountBtn" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-  Delete Account & Data
-</button>
-
-
     <!-- Post Options (3-Dots) Modal -->
     <div id="post-options-modal" class="modal-overlay" onclick="if(event.target === this) closePostOptionsModal()">
         <div class="options-modal-content">
             <div class="option-item" onclick="copyPostLink()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3.54-3.54a5 5 0 0 0-7.07-7.07l-1.41-1.41"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3.54-3.54a5 5 0 1 1 7.07-7.07l1.41 1.41"></path></svg> Copy link
-            </div>
-            <div class="option-item danger" id="delete-post-option" onclick="deleteCurrentPost()" style="display: none;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete post
             </div>
             <div class="option-item" onclick="closePostOptionsModal()">Cancel</div>
@@ -292,13 +268,10 @@
 
     <header>
         <div class="logo">bearsite</div>
-        <div class="user-nav" id="user-nav">
-            <!-- Navigation rendered dynamically -->
-        </div>
+        <div class="user-nav" id="user-nav"></div>
     </header>
 
     <div class="container">
-        <!-- Create Post Trigger Card -->
         <div class="card">
             <div class="post-input-trigger" onclick="openPostModal()">
                 <img id="feed-creator-pic" src="" alt="User">
@@ -306,7 +279,10 @@
             </div>
         </div>
         
-        <!-- Feed Stream -->
+        <div style="margin-bottom: 12px; text-align: right;">
+            <button id="deleteAccountBtn" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Delete Account & Data</button>
+        </div>
+
         <div id="feed-container"></div>
     </div>
 
@@ -317,7 +293,6 @@
         let postsCache = [];
         let activeOptionsPost = null;
 
-        // Custom Animated Popup Toast Notification
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -371,26 +346,21 @@
         }
 
       document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
-    if (confirm('⚠️ Are you sure you want to completely delete your account and all associated posts/data? This cannot be undone.')) {
-        try {
-            const response = await fetch('/api/account', {
-                method: 'DELETE'
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                // Redirect back to landing page after total wipe
-                window.location.href = '/';
-            } else {
-                alert('Failed to delete account.');
+            if (confirm('⚠️ Are you sure you want to completely delete your account and all associated posts/data? This cannot be undone.')) {
+                try {
+                    const response = await fetch('/api/account', { method: 'DELETE' });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = '/';
+                    } else {
+                        alert('Failed to delete account.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the account.');
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred while deleting the account.');
-        }
-    }
-});
-
+        });
 
         function openLogoutModal() {
             document.getElementById('logout-modal').style.display = 'flex';
@@ -438,7 +408,7 @@
             document.body.style.overflow = 'auto';
         }
 
-      async function openCollabModal() {
+        async function openCollabModal() {
             const friendsModal = document.getElementById('collab-friends-modal');
             const container = document.getElementById('friends-list-container');
             container.innerHTML = '<div style="padding: 12px; text-align: center; color: #65676b; font-size: 13px;">Loading friends...</div>';
@@ -484,7 +454,6 @@
             closeCollabModal();
         }
 
-        // User Profile Modal Handler with MongoDB database retrieval for age and birthday
         async function openUserProfileModal(userId, userName, userPic, age, birthday) {
             const modal = document.getElementById('user-profile-modal');
             document.getElementById('profile-modal-pic').src = userPic || 'https://via.placeholder.com/80';
@@ -495,7 +464,6 @@
             
             document.getElementById('profile-modal-meta').textContent = `Age: ${displayAge} • Birthday: ${displayBirthday}`;
             
-            // Fetch from MongoDB database via API to guarantee accurate age and birthday details
             try {
                 const userRes = await fetch(`/api/users/${userId}`);
                 const userData = await userRes.json();
@@ -518,7 +486,6 @@
                     <button class="btn-add-friend" onclick="handleFriendAction('${userId}', 'add')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg> Add Friend
                     </button>
-                    <button class="btn-decline-friend" onclick="handleFriendAction('${userId}', 'decline')">Decline</button>
                 `;
             }
 
@@ -570,23 +537,24 @@
 
         async function handleFriendAction(userId, action) {
             try {
-                const endpoint = action === 'add' ? `/api/friends/add` : `/api/friends/decline`;
-                const res = await fetch(endpoint, {
+                const res = await fetch('/api/friends/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(action === 'add' ? 'Friend request sent!' : 'Friend request declined.', 'success');
+                    showToast('Friend request sent!', 'success');
+                } else {
+                    showToast(data.message || 'Could not send friend request.', 'danger');
                 }
             } catch (err) {
                 console.error("Error handling friend action", err);
+                showToast('An error occurred.', 'danger');
             }
         }
 
-        // Post Options (3-Dots Menu) Handlers
-        function openPostOptions(postId, userId) {
+      function openPostOptions(postId, userId) {
             activeOptionsPost = postsCache.find(p => p._id === postId);
             const deleteOption = document.getElementById('delete-post-option');
             
@@ -599,7 +567,7 @@
             document.body.style.overflow = 'hidden';
         }
 
-      function closePostOptionsModal() {
+        function closePostOptionsModal() {
             document.getElementById('post-options-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
             activeOptionsPost = null;
@@ -616,7 +584,6 @@
             });
         }
 
-        // Delete Post with Loading Animation & Complete Database Deletion
         async function deleteCurrentPost() {
             if (!activeOptionsPost) return;
             closePostOptionsModal();
@@ -647,7 +614,6 @@
             }
         }
 
-        // File upload handler strictly for Photos (Max 4)
         document.getElementById('modal-media-file').addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
@@ -782,7 +748,7 @@
                     authorText += ` is collaborating with ${post.collabWithName}`;
                 }
 
-                let commentsHtml = '';
+              let commentsHtml = '';
                 if (post.comments) {
                     post.comments.forEach(comment => {
                         let repliesHtml = '';
@@ -800,7 +766,7 @@
                             });
                         }
 
-                      commentsHtml += `
+                        commentsHtml += `
                             <div class="comment-item">
                                 <img src="${comment.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
                                 <div style="flex:1;">
@@ -949,7 +915,7 @@
                     </div>
                 </div>
             `;
-            commentsList.appendChild(commentDiv);
+          commentsList.appendChild(commentDiv);
 
             const countSpan = document.querySelector(`[id='comment-count-${postId}']`);
             if (countSpan) countSpan.textContent = post.comments.length;
@@ -985,7 +951,7 @@
             }
         }
 
-      async function submitReply(postId, commentId) {
+        async function submitReply(postId, commentId) {
             const input = document.getElementById(`reply-input-${commentId}`);
             const text = input.value.trim();
             if (!text) return;
@@ -1034,7 +1000,6 @@
             }
         }
 
-        // Global Emergency Escape Key Listener
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closePostModal();
@@ -1049,5 +1014,3 @@
     </script>
 </body>
 </html>
-
-

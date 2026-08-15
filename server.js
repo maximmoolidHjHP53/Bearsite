@@ -8,10 +8,8 @@ const path = require('path');
 
 const app = express();
 
-// CRITICAL for Render deployment (ensures secure cookies/sessions work behind proxy)
 app.set('trust proxy', 1);
 
-// Increase payload limits for image/base64 uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cors());
@@ -21,7 +19,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // true on Render (HTTPS)
+    secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict'
   }
 }));
@@ -29,7 +27,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serve public assets (CSS, JS, images, HTML files)
 app.use(express.static(path.join(__dirname)));
 
 const uri = process.env.MONGO_URI;
@@ -41,7 +38,6 @@ if (!uri) {
 const client = new MongoClient(uri);
 let db, usersCollection, postsCollection, notificationsCollection;
 
-// --- AUTHENTICATION MIDDLEWARE ---
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
@@ -49,7 +45,6 @@ function ensureAuthenticated(req, res, next) {
   res.redirect('/');
 }
 
-// --- PAGE ROUTES (Connected & Protected) ---
 app.get('/', (req, res) => {
   if (req.isAuthenticated()) {
     return res.redirect('/home.html');
@@ -69,7 +64,6 @@ app.get('/notification.html', ensureAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'notification.html'));
 });
 
-// --- PASSPORT SERIALIZATION ---
 passport.serializeUser((user, done) => {
   done(null, user._id);
 });
@@ -83,7 +77,6 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// --- GOOGLE STRATEGY ---
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
@@ -114,7 +107,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   ));
 }
 
-// --- AUTH ROUTES ---
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback', 
@@ -134,7 +126,6 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
-// --- PROFILE COMPLETION ROUTE ---
 app.post('/api/complete-profile', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
 
@@ -160,7 +151,6 @@ app.post('/api/complete-profile', async (req, res) => {
   res.json({ success: true });
 });
 
-// --- CURRENT USER ---
 app.get('/api/current-user', (req, res) => {
   if (req.isAuthenticated()) {
     res.json({ success: true, user: req.user });
@@ -169,7 +159,19 @@ app.get('/api/current-user', (req, res) => {
   }
 });
 
-// --- FRIENDS / USERS ROUTE ---
+// Fetch Individual User Profile (fixes N/A birthday/age issue)
+app.get('/api/users/:userId', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const userId = new ObjectId(req.params.userId);
+    const user = await usersCollection.findOne({ _id: userId }, { projection: { username: 1, profilePicture: 1, age: 1, birthday: 1 } });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching user profile' });
+  }
+});
+
 app.get('/api/friends', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -183,7 +185,6 @@ app.get('/api/friends', async (req, res) => {
   }
 });
 
-// --- FRIEND REQUEST SEND ROUTE ---
 app.post('/api/friends/add', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -219,7 +220,6 @@ app.post('/api/friends/add', async (req, res) => {
   }
 });
 
-// --- FRIEND REQUEST RESPONSE ROUTES ---
 app.post('/api/friends/accept', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -265,7 +265,6 @@ app.post('/api/friends/decline', async (req, res) => {
   }
 });
 
-// --- POSTS ROUTES ---
 app.get('/api/posts', async (req, res) => {
   try {
     const posts = await postsCollection.find().sort({ createdAt: -1 }).toArray();
@@ -301,9 +300,7 @@ app.post('/api/posts', async (req, res) => {
           createdAt: new Date()
         });
       }
-    } catch (e) {
-      // Invalid ObjectId or user not found, skip
-    }
+    } catch (e) {}
   }
 
   const formattedMediaUrls = mediaUrls && mediaUrls.length > 0 
@@ -314,6 +311,8 @@ app.post('/api/posts', async (req, res) => {
     userId: req.user._id,
     userName: req.user.username,
     userProfilePic: req.user.profilePicture,
+    age: req.user.age || 'N/A',
+    birthday: req.user.birthday || 'N/A',
     content: content || '',
     mediaUrls: formattedMediaUrls,
     mediaUrl: formattedMediaUrls[0] || '',
@@ -330,7 +329,6 @@ app.post('/api/posts', async (req, res) => {
   res.json({ success: true, post: createdPost });
 });
 
-// Delete Post Route
 app.delete('/api/posts/:id', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -352,7 +350,6 @@ app.delete('/api/posts/:id', async (req, res) => {
   }
 });
 
-// Like / Unlike Post
 app.post('/api/posts/:id/like', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -375,7 +372,6 @@ app.post('/api/posts/:id/like', async (req, res) => {
   }
 });
 
-// Add Comment
 app.post('/api/posts/:id/comment', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -400,7 +396,6 @@ app.post('/api/posts/:id/comment', async (req, res) => {
   }
 });
 
-// Add Reply to Comment
 app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -428,7 +423,6 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
   }
 });
 
-// --- NOTIFICATIONS ROUTES ---
 app.get('/api/notifications', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -479,25 +473,17 @@ app.post('/api/notifications/:id/read', async (req, res) => {
   }
 });
 
-// --- DELETE ACCOUNT ROUTE (FOR TESTING PURPOSES) ---
 app.delete('/api/account', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false, message: 'Unauthorized' });
   
   try {
     const userId = req.user._id;
-
-    // 1. Delete the user from the users collection
     await usersCollection.deleteOne({ _id: userId });
-
-    // 2. Delete all posts created by this user
     await postsCollection.deleteMany({ userId: userId });
-
-    // 3. Delete all notifications sent to or sent by this user
     await notificationsCollection.deleteMany({
       $or: [{ userId: userId }, { senderId: userId }]
     });
 
-    // 4. Log out and destroy session
     req.logout((err) => {
       if (err) return res.status(500).json({ success: false, message: 'Logout error' });
       req.session.destroy(() => {
@@ -506,13 +492,10 @@ app.delete('/api/account', async (req, res) => {
       });
     });
   } catch (err) {
-    console.error('Error deleting account:', err);
     res.status(500).json({ success: false, message: 'Server error deleting account' });
   }
 });
 
-
-// --- COLLAB RESPONSE ROUTE ---
 app.post('/api/posts/:postId/collab-response', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -536,7 +519,6 @@ app.post('/api/posts/:postId/collab-response', async (req, res) => {
   }
 });
 
-// --- START SERVER ---
 async function startServer() {
   try {
     await client.connect();

@@ -11,12 +11,6 @@
         p { color: #8e8e8e; font-size: 14px; margin-bottom: 30px; }
         .google-btn { display: block; width: 100%; padding: 12px; border: 1px solid #dbdbdb; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; background-color: white; color: #444; text-decoration: none; box-sizing: border-box; text-align: center; }
         .google-btn:hover { background-color: #f5f5f5; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; font-size: 12px; color: #8e8e8e; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #dbdbdb; border-radius: 4px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
-        .submit-btn { background-color: #0095f6; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; margin-top: 10px; }
-        .submit-btn:hover { background-color: #1877f2; }
-        .error-msg { color: #ed4956; font-size: 13px; margin-top: 10px; display: none; }
         .logout-btn { background-color: #ed4956; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; text-decoration: none; display: block; text-align: center; box-sizing: border-box; }
         .home-btn { background-color: #0095f6; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; text-decoration: none; display: block; text-align: center; box-sizing: border-box; }
         .section { display: none; }
@@ -28,35 +22,11 @@
     <div class="card">
         <h1>InstaClone</h1>
         
-        <!-- 1. Google Login Section -->
         <div id="login-section" class="section">
             <p>Sign in quickly with your Google account</p>
             <a href="/auth/google" class="google-btn">Continue with Google</a>
         </div>
 
-        <!-- 2. Profile Setup & Birthday Validation Section -->
-        <div id="profile-section" class="section">
-            <p>Complete your profile & verify your age</p>
-            <form id="profile-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" required placeholder="Choose a username">
-                </div>
-                <div class="form-group">
-                    <label for="birthday">Birthday (Must be 18+)</label>
-                    <input type="date" id="birthday" required>
-                </div>
-                <div class="form-group">
-                    <label for="profilePicture">Profile Picture URL</label>
-                    <input type="url" id="profilePicture" placeholder="https://example.com/pic.jpg">
-                </div>
-                <button type="submit" class="submit-btn">Save Profile</button>
-                <div id="error-msg" class="error-msg">You must be at least 18 years old to use this app.</div>
-            </form>
-            <a href="/auth/logout" class="logout-btn">Log Out</a>
-        </div>
-
-        <!-- 3. Welcome & Feed Navigation Section -->
         <div id="welcome-section" class="section">
             <p id="user-greeting" style="color: #262626; font-weight: bold; font-size: 16px; margin-bottom: 10px;"></p>
             <p>🎉 Your profile is active and saved!</p>
@@ -72,13 +42,10 @@
                 const data = await res.json();
                 
                 if (!data.success) {
-                    // Show login screen if unauthenticated
                     document.getElementById('login-section').classList.add('active');
                 } else if (!data.user.profileCompleted) {
-                    // Show profile creation screen if logged in via Google but missing birthday/username
-                    document.getElementById('profile-section').classList.add('active');
+                    window.location.href = '/creation.html';
                 } else {
-                    // Show dashboard/home link if profile is complete
                     document.getElementById('welcome-section').classList.add('active');
                     document.getElementById('user-greeting').textContent = `Welcome, ${data.user.username || data.user.name}!`;
                 }
@@ -87,43 +54,6 @@
                 document.getElementById('login-section').classList.add('active');
             }
         }
-
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const birthday = document.getElementById('birthday').value;
-            const profilePicture = document.getElementById('profilePicture').value || 'https://via.placeholder.com/150';
-            const errorMsg = document.getElementById('error-msg');
-
-            errorMsg.style.display = 'none';
-
-            try {
-                const res = await fetch('/api/complete-profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, birthday, profilePicture })
-                });
-
-                const result = await res.json();
-
-                if (result.success) {
-                    window.location.href = '/home.html';
-                } else if (result.underAge) {
-                    errorMsg.textContent = 'You must be at least 18 years old. Account deleted.';
-                    errorMsg.style.display = 'block';
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 3000);
-                } else {
-                    errorMsg.textContent = 'Failed to update profile. Please try again.';
-                    errorMsg.style.display = 'block';
-                }
-            } catch (err) {
-                console.error("Error completing profile", err);
-                errorMsg.textContent = 'An error occurred. Please try again.';
-                errorMsg.style.display = 'block';
-            }
-        });
 
         checkUserSession();
     </script>
