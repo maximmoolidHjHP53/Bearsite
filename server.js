@@ -127,6 +127,20 @@ app.get('/api/current-user', (req, res) => {
   }
 });
 
+// --- FRIENDS / USERS ROUTE (For Collab feature) ---
+app.get('/api/friends', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const friends = await usersCollection.find({
+      _id: { $ne: req.user._id },
+      profileCompleted: true
+    }).project({ username: 1, profilePicture: 1 }).toArray();
+    res.json({ success: true, friends });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching friends' });
+  }
+});
+
 // --- POSTS ROUTES ---
 app.get('/api/posts', async (req, res) => {
   try {
@@ -140,14 +154,37 @@ app.get('/api/posts', async (req, res) => {
 app.post('/api/posts', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
 
-  const { content, mediaUrl, mediaType } = req.body;
+  const { content, mediaUrls, mediaUrl, mediaType, collabWith } = req.body;
+
+  let collabWithId = null;
+  let collabWithName = '';
+
+  if (collabWith) {
+    try {
+      const collabUser = await usersCollection.findOne({ _id: new ObjectId(collabWith) });
+      if (collabUser) {
+        collabWithId = collabUser._id;
+        collabWithName = collabUser.username;
+      }
+    } catch (e) {
+      // Invalid ObjectId or user not found, skip
+    }
+  }
+
+  const formattedMediaUrls = mediaUrls && mediaUrls.length > 0 
+    ? mediaUrls 
+    : (mediaUrl ? [mediaUrl] : []);
+
   const newPost = {
     userId: req.user._id,
     userName: req.user.username,
     userProfilePic: req.user.profilePicture,
     content: content || '',
-    mediaUrl: mediaUrl || '',
+    mediaUrls: formattedMediaUrls,
+    mediaUrl: formattedMediaUrls[0] || '',
     mediaType: mediaType || '', // 'image' or 'video'
+    collabWith: collabWithId,
+    collabWithName: collabWithName,
     likes: [],
     comments: [],
     createdAt: new Date()
