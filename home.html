@@ -38,9 +38,38 @@
         .post-input-trigger .fake-input { width: 100%; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; color: #65676b; font-size: 15px; cursor: pointer; }
         .post-input-trigger .fake-input:hover { background: #e4e6eb; }
 
-        /* Fullscreen Modals Overlay - Locked, non-scrollable background */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 1000; flex-direction: column; overflow: hidden; }
-        .modal-content, .friends-modal-content, .profile-modal-content, .options-modal-content, .logout-modal-content { background: white; width: 100% !important; max-width: 100% !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; box-shadow: none !important; overflow: hidden; display: flex; flex-direction: column; }
+        /* Facebook-style Centered Modal Overlay & Scroll Lock */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: rgba(240, 242, 245, 0.85); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+            overflow-y: auto; 
+            padding: 20px; 
+        }
+        
+        .modal-content, .friends-modal-content, .profile-modal-content, .options-modal-content, .logout-modal-content { 
+            background: white; 
+            width: 100%; 
+            max-width: 548px; 
+            max-height: 85vh; 
+            border-radius: 8px; 
+            box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1); 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            margin: auto;
+        }
+
+        .options-modal-content, .logout-modal-content {
+            max-width: 400px;
+        }
         
         .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 18px; flex-shrink: 0; background: #fff; }
         .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
@@ -215,7 +244,7 @@
                 <span>Select Collab Friend</span>
                 <button class="modal-close-btn" onclick="closeCollabModal()">×</button>
             </div>
-            <div id="friends-list-container" style="overflow-y: auto; flex: 1;"></div>
+            <div id="friends-list-container" style="overflow-y: auto; flex: 1; max-height: 50vh;"></div>
             <div style="padding: 16px; border-top: 1px solid #e4e6eb; text-align: right; flex-shrink: 0; background: #fff;">
                 <button onclick="closeCollabModal()" class="post-btn">Done</button>
             </div>
@@ -265,7 +294,7 @@
                 <button class="modal-close-btn" style="position: absolute; right: 16px;" onclick="closeLogoutModal()">×</button>
             </div>
             <div class="modal-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <p style="color: #65676b; font-size: 15px; margin-bottom: 24px;">Are you sure you want to log out of your Bearsite account?</p>
+                <p style="color: #65676b; font-size: 15px; margin-bottom: 24px; text-align: center;">Are you sure you want to log out of your Bearsite account?</p>
                 <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px;">
                     <a href="/auth/logout" class="post-btn" style="text-decoration: none; display: inline-block; background: #e41e3f; line-height: normal;">Confirm Logout</a>
                     <button onclick="closeLogoutModal()" style="background: #e4e6eb; color: #050505; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%;">Cancel</button>
@@ -491,11 +520,9 @@
             const userPosts = postsCache.filter(p => p.userId === userId);
             renderProfilePosts(userPosts, postsContainer);
 
-            // Open modal instantly without blocking network delay
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
 
-            // Background fetch for up-to-date data sync
             fetch(`/api/users/${userId}`).then(res => res.json()).then(userData => {
                 if (userData.success && userData.user) {
                     if (userData.user.age !== undefined && userData.user.age !== null) displayAge = userData.user.age;
@@ -548,7 +575,7 @@
             document.body.style.overflow = 'auto';
         }
 
-      async function handleFriendAction(userId, btnElement) {
+        async function handleFriendAction(userId, btnElement) {
             try {
                 btnElement.disabled = true;
                 btnElement.style.background = '#e4e6eb';
@@ -602,7 +629,7 @@
             });
         }
 
-        async function deleteCurrentPost() {
+      async function deleteCurrentPost() {
             if (!activeOptionsPost) return;
             closePostOptionsModal();
 
@@ -729,7 +756,7 @@
             }
         }
 
-      async function loadPosts() {
+        async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
                 const data = await res.json();
@@ -794,7 +821,6 @@
                                     </div>
                                     <button class="reply-btn" onclick="toggleReplyBox('${comment.id || comment._id}')">Reply</button>
                                     <div class="replies-container" id="replies-list-${comment.id || comment._id}">${repliesHtml}</div>
-                                    
                                     <div class="reply-input-box" id="reply-box-${comment.id || comment._id}">
                                         <img src="${currentUser.profilePicture || 'https://via.placeholder.com/28'}" alt="User">
                                         <div class="reply-input-wrapper">
@@ -808,7 +834,7 @@
                     });
                 }
 
-                const postCard = document.createElement('div');
+              const postCard = document.createElement('div');
                 postCard.className = 'feed-post';
                 postCard.innerHTML = `
                     <div class="post-header">
@@ -908,7 +934,7 @@
                 replies: []
             };
 
-          if (!post.comments) post.comments = [];
+            if (!post.comments) post.comments = [];
             post.comments.push(tempComment);
 
             const commentsList = document.getElementById(`comments-list-${postId}`);
@@ -1033,6 +1059,3 @@
 </body>
 </html>
 
-
-      
-  
