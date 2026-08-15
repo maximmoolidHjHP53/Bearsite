@@ -8,12 +8,11 @@ const path = require('path');
 
 const app = express();
 
-// Increase JSON and urlencoded payload limits to handle base64 image uploads
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Increase payload limits for media/base64 uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cors());
 
-// Required for Passport sessions
 app.use(session({
   secret: process.env.SESSION_SECRET || 'supersecretkey',
   resave: false,
@@ -23,7 +22,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
 const uri = process.env.MONGO_URI;
@@ -33,7 +31,7 @@ if (!uri) {
 }
 
 const client = new MongoClient(uri);
-let db, usersCollection;
+let db, usersCollection, postsCollection;
 
 // --- PASSPORT SERIALIZATION ---
 passport.serializeUser((user, done) => {
@@ -67,7 +65,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             name: profile.displayName,
             provider: 'google',
             providerId: profile.id,
-            profileCompleted: false, // Tracks if creation.html was completed
+            profileCompleted: false,
             createdAt: new Date()
           });
           user = await usersCollection.findOne({ _id: result.insertedId });
@@ -78,18 +76,14 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       }
     }
   ));
-} else {
-  console.warn("WARNING: Google Client ID or Secret is missing in environment variables.");
 }
 
-// --- AUTH & PROFILE ROUTES ---
-
+// --- AUTH ROUTES ---
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    // If the user already finished profile creation, go to home/feed. Otherwise, go to creation page.
     if (req.user && req.user.profileCompleted) {
       res.redirect('/home.html');
     } else {
@@ -98,62 +92,145 @@ app.get('/auth/google/callback',
   }
 );
 
-// --- COMPLETE PROFILE & AGE VERIFICATION ROUTE ---
+// --- PROFILE COMPLETION ROUTE ---
 app.post('/api/complete-profile', async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
 
   const { username, birthday, profilePicture } = req.body;
-
-  if (!username || !birthday || !profilePicture) {
-    return res.status(400).json({ success: false, message: 'All fields are required.' });
-  }
-
-  // Calculate age from birthday
   const birthDate = new Date(birthday);
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
   const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
 
-  // Check if under 18 -> Delete user account and log out
   if (age < 18) {
     await usersCollection.deleteOne({ _id: req.user._id });
-    req.logout((err) => {
-      res.json({ 
-        success: false, 
-        underAge: true, 
-        message: "You cannot access on this apps or web" 
-      });
+    req.logout(() => {
+      res.json({ success: false, underAge: true });
     });
     return;
   }
 
-  // If 18 or older, save profile details to MongoDB
   await usersCollection.updateOne(
     { _id: req.user._id },
-    { 
-      $set: { 
-        username, 
-        birthday, 
-        profilePicture, 
-        profileCompleted: true,
-        updatedAt: new Date()
-      } 
-    }
+    { $set: { username, birthday, profilePicture, profileCompleted: true } }
   );
-
   res.json({ success: true });
 });
 
+// --- CURRENT USER ---
 app.get('/api/current-user', (req, res) => {
   if (req.isAuthenticated()) {
     res.json({ success: true, user: req.user });
   } else {
     res.json({ success: false });
+  }
+});
+
+// --- POSTS ROUTES ---
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await postsCollection.find().sort({ createdAt: -1 }).toArray();
+    res.json({ success: true, posts });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching posts' });
+  }
+});
+
+app.post('/api/posts', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+
+  const { content, mediaUrl, mediaType } = req.body;
+  const newPost = {
+    userId: req.user._id,
+    userName: req.user.username,
+    userProfilePic: req.user.profilePicture,
+    content: content || '',
+    mediaUrl: mediaUrl || '',
+    mediaType: mediaType || '', // 'image' or 'video'
+    likes: [],
+    comments: [],
+    createdAt: new Date()
+  };
+
+  const result = await postsCollection.insertOne(newPost);
+  const createdPost = await postsCollection.findOne({ _id: result.insertedId });
+  res.json({ success: true, post: createdPost });
+});
+
+// Like / Unlike Post
+app.post('/api/posts/:id/like', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const postId = new ObjectId(req.params.id);
+    const post = await postsCollection.findOne({ _id: postId });
+    if (!post) return res.status(404).json({ success: false });
+
+    const userIdStr = req.user._id.toString();
+    let likes = post.likes || [];
+    if (likes.includes(userIdStr)) {
+      likes = likes.filter(id => id !== userIdStr);
+    } else {
+      likes.push(userIdStr);
+    }
+
+    await postsCollection.updateOne({ _id: postId }, { $set: { likes } });
+    res.json({ success: true, likes });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Add Comment
+app.post('/api/posts/:id/comment', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const postId = new ObjectId(req.params.id);
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ success: false });
+
+    const comment = {
+      id: new ObjectId(),
+      userId: req.user._id,
+      userName: req.user.username,
+      userProfilePic: req.user.profilePicture,
+      text,
+      createdAt: new Date(),
+      replies: []
+    };
+
+    await postsCollection.updateOne({ _id: postId }, { $push: { comments: comment } });
+    res.json({ success: true, comment });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Add Reply to Comment
+app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ success: false });
+  try {
+    const postId = new ObjectId(req.params.postId);
+    const commentId = req.params.commentId;
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ success: false });
+
+    const reply = {
+      id: new ObjectId(),
+      userId: req.user._id,
+      userName: req.user.username,
+      userProfilePic: req.user.profilePicture,
+      text,
+      createdAt: new Date()
+    };
+
+    await postsCollection.updateOne(
+      { _id: postId, "comments.id": new ObjectId(commentId) },
+      { $push: { "comments.$.replies": reply } }
+    );
+    res.json({ success: true, reply });
+  } catch (err) {
+    res.status(500).json({ success: false });
   }
 });
 
@@ -168,6 +245,7 @@ async function startServer() {
     await client.connect();
     db = client.db("instaclone");
     usersCollection = db.collection("users");
+    postsCollection = db.collection("posts");
     console.log("Connected to MongoDB Atlas & ready!");
 
     const PORT = process.env.PORT || 3000;

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsfeed - Facebook Style</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; color: #050505; }
+        
+        /* Navbar */
+        header { background: white; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 24px; font-weight: bold; color: #1877f2; }
+        .user-nav { display: flex; align-items: center; gap: 10px; }
+        .user-nav img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+        .logout-btn { background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; color: #050505; font-size: 14px; }
+
+        /* Container */
+        .container { max-width: 680px; margin: 20px auto; padding: 0 10px; }
+
+        /* Create Post Card */
+        .card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 12px 16px; margin-bottom: 16px; }
+        .post-input-box { display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #e4e6eb; padding-bottom: 12px; }
+        .post-input-box img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .post-input-box textarea { width: 100%; border: none; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; resize: none; font-size: 15px; outline: none; }
+        
+        .post-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; }
+        .upload-label { cursor: pointer; color: #42b72a; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        .post-btn { background: #1877f2; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .post-btn:disabled { background: #e4e6eb; color: #bcc0c4; cursor: not-allowed; }
+        
+        #media-preview { margin-top: 10px; position: relative; max-height: 300px; overflow: hidden; border-radius: 8px; display: none; }
+        #media-preview img, #media-preview video { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; }
+
+        /* Post Feed Cards */
+        .feed-post { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 16px; padding: 12px 16px; }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .post-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .post-author { font-weight: bold; font-size: 15px; }
+        .post-time { font-size: 12px; color: #65676b; }
+        
+        .post-body { font-size: 15px; margin-bottom: 10px; line-height: 1.5; white-space: pre-wrap; }
+        .post-media { width: 100%; max-height: 400px; overflow: hidden; background: #000; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; }
+        .post-media img, .post-media video { width: 100%; max-height: 400px; object-fit: cover; }
+
+        /* Metrics & Action buttons */
+        .post-stats { display: flex; justify-content: space-between; color: #65676b; font-size: 13px; padding-bottom: 8px; border-bottom: 1px solid #e4e6eb; }
+        .post-action-bar { display: flex; justify-content: space-around; padding: 4px 0; border-bottom: 1px solid #e4e6eb; margin-bottom: 10px; }
+        .action-btn { background: none; border: none; font-weight: bold; color: #65676b; cursor: pointer; padding: 8px; width: 100%; border-radius: 4px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .action-btn:hover { background: #f0f2f5; }
+        .action-btn.liked { color: #1877f2; }
+
+        /* Comments Section */
+        .comments-section { margin-top: 10px; }
+        .comment-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .comment-input-row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .comment-input-row input { flex: 1; background: #f0f2f5; border: none; border-radius: 20px; padding: 8px 12px; outline: none; font-size: 14px; }
+        
+        .comment-item { display: flex; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+        .comment-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .comment-bubble { background: #f0f2f5; padding: 8px 12px; border-radius: 18px; max-width: 85%; }
+        .comment-author { font-weight: bold; font-size: 13px; }
+        .reply-btn { background: none; border: none; color: #65676b; font-size: 12px; font-weight: bold; cursor: pointer; padding: 2px 5px; margin-top: 2px; }
+        .reply-btn:hover { text-decoration: underline; }
+
+        .replies-container { margin-left: 40px; margin-top: 5px; }
+        .reply-item { display: flex; gap: 6px; margin-bottom: 6px; font-size: 13px; }
+        .reply-item img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .reply-input-box { display: none; margin-left: 40px; margin-bottom: 8px; gap: 6px; }
+        .reply-input-box input { flex: 1; background: #f0f2f5; border: none; border-radius: 15px; padding: 6px 10px; outline: none; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">facebook</div>
+        <div class="user-nav" id="user-nav">
+            <!-- Loaded dynamically -->
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Create Post Box -->
+        <div class="card">
+            <div class="post-input-box">
+                <img id="creator-pic" src="" alt="User">
+                <textarea id="post-text" placeholder="What's on your mind?" rows="2"></textarea>
+            </div>
+            
+            <div id="media-preview">
+                <button onclick="clearMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">×</button>
+            </div>
+
+            <div class="post-actions">
+                <label class="upload-label">
+                    📷 Photo/Video
+                    <input type="file" id="media-file" accept="image/*,video/*" style="display: none;">
+                </label>
+                <button id="submit-post-btn" class="post-btn" disabled onclick="createPost()">Post</button>
+            </div>
+        </div>
+
+        <!-- Feed Stream -->
+        <div id="feed-container">
+            <!-- Dynamic posts render here -->
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let selectedMediaBase64 = '';
+        let selectedMediaType = '';
+
+        async function initPage() {
+            try {
+                const res = await fetch('/api/current-user');
+                const data = await res.json();
+                if (!data.success) {
+                    window.location.href = '/';
+                    return;
+                }
+                currentUser = data.user;
+                document.getElementById('creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
+                document.getElementById('user-nav').innerHTML = `
+                    <img src="${currentUser.profilePicture || 'https://via.placeholder.com/36'}" alt="Profile">
+                    <span style="font-weight: bold; font-size: 14px;">${currentUser.username}</span>
+                    <a href="/auth/logout" class="logout-btn">Logout</a>
+                `;
+                loadPosts();
+            } catch (err) {
+                console.error("Initialization error", err);
+            }
+        }
+
+        // Handle Media Selection & Preview (Cropped look using object-fit)
+        document.getElementById('media-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedMediaType = file.type.startsWith('video') ? 'video' : 'image';
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    selectedMediaBase64 = event.target.result;
+                    const previewDiv = document.getElementById('media-preview');
+                    previewDiv.style.display = 'block';
+                    if (selectedMediaType === 'video') {
+                        previewDiv.innerHTML = `<button onclick="clearMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button><video src="${selectedMediaBase64}" controls></video>`;
+                    } else {
+                        previewDiv.innerHTML = `<button onclick="clearMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button><img src="${selectedMediaBase64}" alt="Preview">`;
+                    }
+                    checkPostReady();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearMedia() {
+            selectedMediaBase64 = '';
+            selectedMediaType = '';
+            document.getElementById('media-file').value = '';
+            const previewDiv = document.getElementById('media-preview');
+            previewDiv.style.display = 'none';
+            previewDiv.innerHTML = '';
+            checkPostReady();
+        }
+
+        document.getElementById('post-text').addEventListener('input', checkPostReady);
+
+        function checkPostReady() {
+            const text = document.getElementById('post-text').value.trim();
+            const btn = document.getElementById('submit-post-btn');
+            if (text || selectedMediaBase64) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        async function createPost() {
+            const content = document.getElementById('post-text').value.trim();
+            const btn = document.getElementById('submit-post-btn');
+            btn.disabled = true;
+            btn.textContent = 'Posting...';
+
+            try {
+                const res = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content,
+                        mediaUrl: selectedMediaBase64,
+                        mediaType: selectedMediaType
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('post-text').value = '';
+                    clearMedia();
+                    loadPosts();
+                }
+            } catch (err) {
+                console.error("Error creating post", err);
+            } finally {
+                btn.textContent = 'Post';
+            }
+        }
+
+        async function loadPosts() {
+            try {
+                const res = await fetch('/api/posts');
+                const data = await res.json();
+                if (data.success) {
+                    renderFeed(data.posts);
+                }
+            } catch (err) {
+                console.error("Error loading posts", err);
+            }
+        }
+
+        function renderFeed(posts) {
+            const container = document.getElementById('feed-container');
+            container.innerHTML = '';
+
+            posts.forEach(post => {
+                const isLiked = post.likes && post.likes.includes(currentUser._id);
+                const likeCount = post.likes ? post.likes.length : 0;
+                
+                let mediaHtml = '';
+                if (post.mediaUrl) {
+                    if (post.mediaType === 'video') {
+                        mediaHtml = `<div class="post-media"><video src="${post.mediaUrl}" controls></video></div>`;
+                    } else {
+                        mediaHtml = `<div class="post-media"><img src="${post.mediaUrl}" alt="Post image"></div>`;
+                    }
+                }
+
+                let commentsHtml = '';
+                if (post.comments) {
+                    post.comments.forEach(comment => {
+                        let repliesHtml = '';
+                        if (comment.replies) {
+                            comment.replies.forEach(reply => {
+                                repliesHtml += `
+                                    <div class="reply-item">
+                                        <img src="${reply.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
+                                        <div class="comment-bubble">
+                                            <div class="comment-author">${reply.userName}</div>
+                                            <div>${reply.text}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        commentsHtml += `
+                            <div class="comment-item">
+                                <img src="${comment.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
+                                <div style="flex:1;">
+                                    <div class="comment-bubble">
+                                        <div class="comment-author">${comment.userName}</div>
+                                        <div>${comment.text}</div>
+                                    </div>
+                                    <button class="reply-btn" onclick="toggleReplyBox('${comment.id}')">Reply</button>
+                                    <div class="replies-container">${repliesHtml}</div>
+                                    
+                                    <div class="reply-input-box" id="reply-box-${comment.id}">
+                                        <img src="${currentUser.profilePicture || 'https://via.placeholder.com/28'}" alt="User">
+                                        <input type="text" id="reply-input-${comment.id}" placeholder="Write a reply..." onkeypress="handleReplyKey(event, '${post._id}', '${comment.id}')">
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                const postCard = document.createElement('div');
+                postCard.className = 'feed-post';
+                postCard.innerHTML = `
+                    <div class="post-header">
+                        <img src="${post.userProfilePic || 'https://via.placeholder.com/40'}" alt="Author">
+                        <div>
+                            <div class="post-author">${post.userName}</div>
+                            <div class="post-time">${new Date(post.createdAt).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-body">${post.content}</div>
+                    ${mediaHtml}
+                    <div class="post-stats">
+                        <span>👍 ${likeCount} likes</span>
+                        <span>${post.comments ? post.comments.length : 0} comments</span>
+                    </div>
+                    <div class="post-action-bar">
+                        <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
+                            👍 Like
+                        </button>
+                        <button class="action-btn" onclick="document.getElementById('comment-input-${post._id}').focus()">
+                            💬 Comment
+                        </button>
+                    </div>
+                    <div class="comments-section">
+                        <div class="comment-input-row">
+                            <img src="${currentUser.profilePicture || 'https://via.placeholder.com/32'}" alt="User">
+                            <input type="text" id="comment-input-${post._id}" placeholder="Write a comment..." onkeypress="handleCommentKey(event, '${post._id}')">
+                        </div>
+                        <div id="comments-list-${post._id}">
+                            ${commentsHtml}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(postCard);
+            });
+        }
+
+        async function toggleLike(postId) {
+            try {
+                await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+                loadPosts();
+            } catch (err) {
+                console.error("Error toggling like", err);
+            }
+        }
+
+        async function handleCommentKey(e, postId) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                const text = e.target.value.trim();
+                try {
+                    await fetch(`/api/posts/${postId}/comment`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+                    loadPosts();
+                } catch (err) {
+                    console.error("Error posting comment", err);
+                }
+            }
+        }
+
+        function toggleReplyBox(commentId) {
+            const box = document.getElementById(`reply-box-${commentId}`);
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+            if (box.style.display === 'flex') {
+                document.getElementById(`reply-input-${commentId}`).focus();
+            }
+        }
+
+        async function handleReplyKey(e, postId, commentId) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                const text = e.target.value.trim();
+                try {
+                    await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+                    loadPosts();
+                } catch (err) {
+                    console.error("Error posting reply", err);
+                }
+            }
+        }
+
+        initPage();
+    </script>
+</body>
+</html>
