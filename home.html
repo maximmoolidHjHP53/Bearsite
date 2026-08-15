@@ -192,7 +192,7 @@
     </div>
 
     <!-- Create Post Modal -->
-    <div id="create-post-modal" class="modal-overlay">
+    <div id="create-post-modal" class="modal-overlay" onclick="if(event.target === this) closePostModal()">
         <div class="modal-content">
             <div class="modal-header">
                 <span>Create post</span>
@@ -230,7 +230,7 @@
     </div>
 
     <!-- Collab Friends Selection Modal -->
-    <div id="collab-friends-modal" class="modal-overlay">
+    <div id="collab-friends-modal" class="modal-overlay" onclick="if(event.target === this) closeCollabModal()">
         <div class="friends-modal-content">
             <div class="modal-header" style="font-size: 16px;">
                 <span>Select Collab Friend</span>
@@ -244,7 +244,7 @@
     </div>
 
     <!-- User Profile Modal -->
-    <div id="user-profile-modal" class="modal-overlay">
+    <div id="user-profile-modal" class="modal-overlay" onclick="if(event.target === this) closeProfileModal()">
         <div class="profile-modal-content">
             <div class="modal-header">
                 <span>User Profile</span>
@@ -356,7 +356,7 @@
                     </button>
                 `;
 
-              await fetchNotificationsCount();
+                await fetchNotificationsCount();
                 await loadPosts();
             } catch (err) {
                 console.error("Initialization error", err);
@@ -367,10 +367,12 @@
 
         function openLogoutModal() {
             document.getElementById('logout-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLogoutModal() {
             document.getElementById('logout-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         async function fetchNotificationsCount() {
@@ -400,18 +402,21 @@
             document.getElementById('modal-creator-pic').src = currentUser.profilePicture || 'https://via.placeholder.com/40';
             document.getElementById('modal-creator-name').textContent = currentUser.username;
             document.getElementById('create-post-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
             document.getElementById('modal-post-text').focus();
         }
 
         function closePostModal() {
             document.getElementById('create-post-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
-        async function openCollabModal() {
+      async function openCollabModal() {
             const friendsModal = document.getElementById('collab-friends-modal');
             const container = document.getElementById('friends-list-container');
             container.innerHTML = '<div style="padding: 12px; text-align: center; color: #65676b; font-size: 13px;">Loading friends...</div>';
             friendsModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
             try {
                 const res = await fetch('/api/friends');
                 const data = await res.json();
@@ -441,6 +446,7 @@
 
         function closeCollabModal() {
             document.getElementById('collab-friends-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         function selectCollabFriend(friend) {
@@ -492,6 +498,7 @@
             const postsContainer = document.getElementById('profile-modal-posts');
             postsContainer.innerHTML = '<div style="text-align: center; color: #65676b; padding: 20px;">Loading posts...</div>';
             modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
 
             const userPosts = postsCache.filter(p => p.userId === userId);
             if (userPosts.length > 0) {
@@ -511,7 +518,7 @@
                         mediaHtml += `</div>`;
                     }
 
-                  postDiv.innerHTML = `
+                    postDiv.innerHTML = `
                         <div class="post-header">
                             <img src="${post.userProfilePic || 'https://via.placeholder.com/40'}" alt="Author">
                             <div>
@@ -531,6 +538,7 @@
 
         function closeProfileModal() {
             document.getElementById('user-profile-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         async function handleFriendAction(userId, action) {
@@ -561,10 +569,12 @@
                 deleteOption.style.display = 'none';
             }
             document.getElementById('post-options-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
-        function closePostOptionsModal() {
+      function closePostOptionsModal() {
             document.getElementById('post-options-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
             activeOptionsPost = null;
         }
 
@@ -710,7 +720,7 @@
 
         async function loadPosts() {
             try {
-              const res = await fetch('/api/posts');
+                const res = await fetch('/api/posts');
                 const data = await res.json();
                 if (data.success) {
                     postsCache = data.posts;
@@ -763,7 +773,7 @@
                             });
                         }
 
-                        commentsHtml += `
+                      commentsHtml += `
                             <div class="comment-item">
                                 <img src="${comment.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
                                 <div style="flex:1;">
@@ -934,7 +944,7 @@
             }
         }
 
-      function toggleReplyBox(commentId) {
+        function toggleReplyBox(commentId) {
             const box = document.getElementById(`reply-box-${commentId}`);
             box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
             if (box.style.display === 'flex') {
@@ -948,7 +958,7 @@
             }
         }
 
-        async function submitReply(postId, commentId) {
+      async function submitReply(postId, commentId) {
             const input = document.getElementById(`reply-input-${commentId}`);
             const text = input.value.trim();
             if (!text) return;
@@ -997,7 +1007,20 @@
             }
         }
 
+        // Global Emergency Escape Key Listener
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePostModal();
+                closeCollabModal();
+                closeProfileModal();
+                closePostOptionsModal();
+                closeLogoutModal();
+            }
+        });
+
         initPage();
     </script>
 </body>
 </html>
+
+

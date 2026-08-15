@@ -8,6 +8,9 @@ const path = require('path');
 
 const app = express();
 
+// CRITICAL for Render deployment (ensures secure cookies/sessions work behind proxy)
+app.set('trust proxy', 1);
+
 // Increase payload limits for image/base64 uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -16,12 +19,17 @@ app.use(cors());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'supersecretkey',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // true on Render (HTTPS)
+    sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict'
+  }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Serve public assets (CSS, JS, images, index.html)
 app.use(express.static(path.join(__dirname)));
 
 const uri = process.env.MONGO_URI;
@@ -32,6 +40,30 @@ if (!uri) {
 
 const client = new MongoClient(uri);
 let db, usersCollection, postsCollection, notificationsCollection;
+
+// --- AUTHENTICATION MIDDLEWARE ---
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/');
+}
+
+// --- PAGE ROUTES (Connected & Protected) ---
+app.get('/', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/home.html');
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/home.html', ensureAuthenticated, (req, res) => {
+  res.sendFile(path.join(__dirname, 'home.html'));
+});
+
+app.get('/creation.html', ensureAuthenticated, (req, res) => {
+  res.sendFile(path.join(__dirname, 'creation.html'));
+});
 
 // --- PASSPORT SERIALIZATION ---
 passport.serializeUser((user, done) => {
@@ -127,7 +159,7 @@ app.get('/api/current-user', (req, res) => {
   }
 });
 
-// --- FRIENDS / USERS ROUTE (For Collab & Profile feature) ---
+// --- FRIENDS / USERS ROUTE ---
 app.get('/api/friends', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
