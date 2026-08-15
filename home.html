@@ -51,9 +51,12 @@
 
         /* Comments Section */
         .comments-section { margin-top: 10px; }
-        .comment-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .comment-input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
         .comment-input-row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-        .comment-input-row input { flex: 1; background: #f0f2f5; border: none; border-radius: 20px; padding: 8px 12px; outline: none; font-size: 14px; }
+        .input-with-btn { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 20px; padding-right: 8px; }
+        .input-with-btn input { flex: 1; background: none; border: none; padding: 8px 12px; outline: none; font-size: 14px; }
+        .send-btn { background: none; border: none; color: #1877f2; font-weight: bold; cursor: pointer; font-size: 14px; padding: 4px 8px; }
+        .send-btn:hover { opacity: 0.8; }
         
         .comment-item { display: flex; gap: 8px; margin-bottom: 8px; font-size: 14px; }
         .comment-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
@@ -65,8 +68,11 @@
         .replies-container { margin-left: 40px; margin-top: 5px; }
         .reply-item { display: flex; gap: 6px; margin-bottom: 6px; font-size: 13px; }
         .reply-item img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .reply-input-box { display: none; margin-left: 40px; margin-bottom: 8px; gap: 6px; }
-        .reply-input-box input { flex: 1; background: #f0f2f5; border: none; border-radius: 15px; padding: 6px 10px; outline: none; font-size: 13px; }
+        
+        .reply-input-box { display: none; margin-left: 40px; margin-bottom: 8px; align-items: center; gap: 6px; }
+        .reply-input-box img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .reply-input-wrapper { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 15px; padding-right: 6px; }
+        .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; }
 
         /* Loading Popup Overlay */
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
@@ -123,6 +129,7 @@
         let currentUser = null;
         let selectedMediaBase64 = '';
         let selectedMediaType = '';
+        let postsCache = [];
 
         async function initPage() {
             try {
@@ -180,18 +187,12 @@
         function checkPostReady() {
             const text = document.getElementById('post-text').value.trim();
             const btn = document.getElementById('submit-post-btn');
-            if (text || selectedMediaBase64) {
-                btn.disabled = false;
-            } else {
-                btn.disabled = true;
-            }
+            btn.disabled = !(text || selectedMediaBase64);
         }
 
         async function createPost() {
             const content = document.getElementById('post-text').value.trim();
             const loadingOverlay = document.getElementById('loading-overlay');
-            
-            // Show loading overlay
             loadingOverlay.style.display = 'flex';
 
             try {
@@ -213,7 +214,6 @@
             } catch (err) {
                 console.error("Error creating post", err);
             } finally {
-                // Hide loading overlay once database save finishes
                 loadingOverlay.style.display = 'none';
                 document.getElementById('submit-post-btn').disabled = true;
             }
@@ -224,7 +224,8 @@
                 const res = await fetch('/api/posts');
                 const data = await res.json();
                 if (data.success) {
-                    renderFeed(data.posts);
+                    postsCache = data.posts;
+                    renderFeed(postsCache);
                 }
             } catch (err) {
                 console.error("Error loading posts", err);
@@ -256,7 +257,7 @@
                             comment.replies.forEach(reply => {
                                 repliesHtml += `
                                     <div class="reply-item">
-                                        <img src="${reply.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
+                                        <img src="${reply.userProfilePic || 'https://via.placeholder.com/28'}" alt="User">
                                         <div class="comment-bubble">
                                             <div class="comment-author">${reply.userName}</div>
                                             <div>${reply.text}</div>
@@ -275,11 +276,14 @@
                                         <div>${comment.text}</div>
                                     </div>
                                     <button class="reply-btn" onclick="toggleReplyBox('${comment.id}')">Reply</button>
-                                    <div class="replies-container">${repliesHtml}</div>
+                                    <div class="replies-container" id="replies-list-${comment.id}">${repliesHtml}</div>
                                     
                                     <div class="reply-input-box" id="reply-box-${comment.id}">
                                         <img src="${currentUser.profilePicture || 'https://via.placeholder.com/28'}" alt="User">
-                                        <input type="text" id="reply-input-${comment.id}" placeholder="Write a reply..." onkeypress="handleReplyKey(event, '${post._id}', '${comment.id}')">
+                                        <div class="reply-input-wrapper">
+                                            <input type="text" id="reply-input-${comment.id}" placeholder="Write a reply..." onkeypress="handleReplyKey(event, '${post._id}', '${comment.id}')">
+                                            <button class="send-btn" onclick="submitReply('${post._id}', '${comment.id}')">Reply</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -300,11 +304,11 @@
                     <div class="post-body">${post.content}</div>
                     ${mediaHtml}
                     <div class="post-stats">
-                        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#1877f2" style="vertical-align: middle; margin-right: 2px;"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg> ${likeCount}</span>
-                        <span>${post.comments ? post.comments.length : 0} comments</span>
+                        <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#1877f2" style="vertical-align: middle; margin-right: 2px;"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg> <span id="like-count-${post._id}">${likeCount}</span></span>
+                        <span><span id="comment-count-${post._id}">${post.comments ? post.comments.length : 0}</span> comments</span>
                     </div>
                     <div class="post-action-bar">
-                        <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
+                        <button id="like-btn-${post._id}" class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? '#1877f2' : 'currentColor'}"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg> Like
                         </button>
                         <button class="action-btn" onclick="document.getElementById('comment-input-${post._id}').focus()">
@@ -314,7 +318,10 @@
                     <div class="comments-section">
                         <div class="comment-input-row">
                             <img src="${currentUser.profilePicture || 'https://via.placeholder.com/32'}" alt="User">
-                            <input type="text" id="comment-input-${post._id}" placeholder="Write a comment..." onkeypress="handleCommentKey(event, '${post._id}')">
+                            <div class="input-with-btn">
+                                <input type="text" id="comment-input-${post._id}" placeholder="Write a comment..." onkeypress="handleCommentKey(event, '${post._id}')">
+                                <button class="send-btn" onclick="submitComment('${post._id}')">Send</button>
+                            </div>
                         </div>
                         <div id="comments-list-${post._id}">
                             ${commentsHtml}
@@ -325,28 +332,111 @@
             });
         }
 
+        // Fast Instant Like Toggle (Optimistic UI)
         async function toggleLike(postId) {
+            const post = postsCache.find(p => p._id === postId);
+            if (!post) return;
+
+            if (!post.likes) post.likes = [];
+            const index = post.likes.indexOf(currentUser._id);
+            const isCurrentlyLiked = index > -1;
+
+            if (isCurrentlyLiked) {
+                post.likes.splice(index, 1);
+            } else {
+                post.likes.push(currentUser._id);
+            }
+
+            // Instantly update DOM without waiting
+            const likeCountSpan = document.getElementById(`like-count-${postId}`);
+            const likeBtn = document.getElementById(`like-btn-${postId}`);
+            likeCountSpan.textContent = post.likes.length;
+            if (!isCurrentlyLiked) {
+                likeBtn.classList.add('liked');
+                likeBtn.querySelector('svg').setAttribute('fill', '#1877f2');
+            } else {
+                likeBtn.classList.remove('liked');
+                likeBtn.querySelector('svg').setAttribute('fill', 'currentColor');
+            }
+
+            // Background sync
             try {
                 await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
-                loadPosts();
             } catch (err) {
                 console.error("Error toggling like", err);
             }
         }
 
         async function handleCommentKey(e, postId) {
-            if (e.key === 'Enter' && e.target.value.trim()) {
-                const text = e.target.value.trim();
-                try {
-                    await fetch(`/api/posts/${postId}/comment`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text })
-                    });
-                    loadPosts();
-                } catch (err) {
-                    console.error("Error posting comment", err);
+            if (e.key === 'Enter') {
+                submitComment(postId);
+            }
+        }
+
+        // Fast Instant Comment Submission
+        async function submitComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = ''; // clear instantly
+
+            const post = postsCache.find(p => p._id === postId);
+            if (!post) return;
+
+            const tempComment = {
+                id: 'temp_' + Date.now(),
+                text: text,
+                userName: currentUser.username,
+                userProfilePic: currentUser.profilePicture,
+                replies: []
+            };
+
+            if (!post.comments) post.comments = [];
+            post.comments.push(tempComment);
+
+            // Instantly append to DOM
+            const commentsList = document.getElementById(`comments-list-${postId}`);
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment-item';
+            commentDiv.innerHTML = `
+                <img src="${tempComment.userProfilePic || 'https://via.placeholder.com/32'}" alt="User">
+                <div style="flex:1;">
+                    <div class="comment-bubble">
+                        <div class="comment-author">${tempComment.userName}</div>
+                        <div>${tempComment.text}</div>
+                    </div>
+                    <button class="reply-btn" onclick="toggleReplyBox('${tempComment.id}')">Reply</button>
+                    <div class="replies-container" id="replies-list-${tempComment.id}"></div>
+                    
+                    <div class="reply-input-box" id="reply-box-${tempComment.id}">
+                        <img src="${currentUser.profilePicture || 'https://via.placeholder.com/28'}" alt="User">
+                        <div class="reply-input-wrapper">
+                            <input type="text" id="reply-input-${tempComment.id}" placeholder="Write a reply..." onkeypress="handleReplyKey(event, '${postId}', '${tempComment.id}')">
+                            <button class="send-btn" onclick="submitReply('${postId}', '${tempComment.id}')">Reply</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            commentsList.appendChild(commentDiv);
+
+            // Update comment count
+            const countSpan = document.querySelector(`[id='comment-count-${postId}']`);
+            if (countSpan) countSpan.textContent = post.comments.length;
+
+            // Background sync
+            try {
+                const res = await fetch(`/api/posts/${postId}/comment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadPosts(); // Silent sync in background
                 }
+            } catch (err) {
+                console.error("Error posting comment", err);
             }
         }
 
@@ -359,18 +449,59 @@
         }
 
         async function handleReplyKey(e, postId, commentId) {
-            if (e.key === 'Enter' && e.target.value.trim()) {
-                const text = e.target.value.trim();
-                try {
-                  await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text })
-                    });
-                    loadPosts();
-                } catch (err) {
-                    console.error("Error posting reply", err);
+            if (e.key === 'Enter') {
+                submitReply(postId, commentId);
+            }
+        }
+
+        // Fast Instant Reply Submission
+        async function submitReply(postId, commentId) {
+            const input = document.getElementById(`reply-input-${commentId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = ''; // clear instantly
+
+            const post = postsCache.find(p => p._id === postId);
+            if (!post) return;
+            const comment = post.comments.find(c => c.id === commentId || c._id === commentId);
+            if (!comment) return;
+
+            const tempReply = {
+                text: text,
+                userName: currentUser.username,
+                userProfilePic: currentUser.profilePicture
+            };
+
+            if (!comment.replies) comment.replies = [];
+            comment.replies.push(tempReply);
+
+            // Instantly append to DOM
+            const repliesList = document.getElementById(`replies-list-${commentId}`);
+            const replyDiv = document.createElement('div');
+            replyDiv.className = 'reply-item';
+            replyDiv.innerHTML = `
+                <img src="${tempReply.userProfilePic || 'https://via.placeholder.com/28'}" alt="User">
+                <div class="comment-bubble">
+                    <div class="comment-author">${tempReply.userName}</div>
+                    <div>${tempReply.text}</div>
+                </div>
+            `;
+            repliesList.appendChild(replyDiv);
+
+            // Background sync
+            try {
+                const res = await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadPosts(); // Silent sync in background
                 }
+            } catch (err) {
+                console.error("Error posting reply", err);
             }
         }
 
@@ -378,4 +509,3 @@
     </script>
 </body>
 </html>
-  
