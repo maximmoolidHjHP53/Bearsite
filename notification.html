@@ -200,8 +200,9 @@
 
         async function handleNotificationClick(notificationId, link) {
             try {
+                const card = document.getElementById(`notif-${notificationId}`);
+                if (card) card.classList.remove('unread');
                 await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' });
-                document.getElementById(`notif-${notificationId}`).classList.remove('unread');
                 await updateNotificationCount();
             } catch (err) {
                 console.error("Error marking notification read", err);
@@ -213,12 +214,15 @@
 
         async function markAllAsRead() {
             try {
+                document.querySelectorAll('.notification-card').forEach(card => {
+                    card.classList.remove('unread');
+                });
+                const badge = document.getElementById('nav-notif-badge');
+                if (badge) badge.style.display = 'none';
+
                 const res = await fetch('/api/notifications/read', { method: 'POST' });
                 const data = await res.json();
                 if (data.success) {
-                    document.querySelectorAll('.notification-card').forEach(card => {
-                        card.classList.remove('unread');
-                    });
                     await updateNotificationCount();
                 }
             } catch (err) {
@@ -228,17 +232,21 @@
 
         async function respondFriendRequest(notificationId, senderId, action) {
             try {
+                const card = document.getElementById(`notif-${notificationId}`);
+                if (card) card.remove();
+                
+                const container = document.getElementById('notifications-container');
+                if (container && container.children.length === 0) {
+                    container.innerHTML = `<div class="empty-state">No notifications right now.</div>`;
+                }
+
                 const endpoint = action === 'accept' ? '/api/friends/accept' : '/api/friends/decline';
-                const res = await fetch(endpoint, {
+                await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: senderId })
                 });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById(`notif-${notificationId}`).remove();
-                    await updateNotificationCount();
-                }
+                await updateNotificationCount();
             } catch (err) {
                 console.error("Error handling friend request", err);
             }
@@ -246,16 +254,20 @@
 
         async function respondCollab(notificationId, postId, action) {
             try {
-                const res = await fetch(`/api/posts/${postId}/collab-response`, {
+                const card = document.getElementById(`notif-${notificationId}`);
+                if (card) card.remove();
+
+                const container = document.getElementById('notifications-container');
+                if (container && container.children.length === 0) {
+                    container.innerHTML = `<div class="empty-state">No notifications right now.</div>`;
+                }
+
+                await fetch(`/api/posts/${postId}/collab-response`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action })
                 });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById(`notif-${notificationId}`).remove();
-                    await updateNotificationCount();
-                }
+                await updateNotificationCount();
             } catch (err) {
                 console.error("Error handling collab response", err);
             }

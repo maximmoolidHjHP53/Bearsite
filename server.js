@@ -159,7 +159,6 @@ app.get('/api/current-user', (req, res) => {
   }
 });
 
-// Fetch Individual User Profile (fixes N/A birthday/age issue)
 app.get('/api/users/:userId', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ success: false });
   try {
@@ -281,6 +280,7 @@ app.post('/api/posts', async (req, res) => {
 
   let collabWithId = null;
   let collabWithName = '';
+  const postObjectId = new ObjectId();
 
   if (collabWith) {
     try {
@@ -295,6 +295,7 @@ app.post('/api/posts', async (req, res) => {
           senderName: req.user.username,
           senderProfilePic: req.user.profilePicture,
           type: 'collab_invite',
+          postId: postObjectId,
           message: 'invited you to collaborate on a post.',
           read: false,
           createdAt: new Date()
@@ -308,6 +309,7 @@ app.post('/api/posts', async (req, res) => {
     : (mediaUrl ? [mediaUrl] : []);
 
   const newPost = {
+    _id: postObjectId,
     userId: req.user._id,
     userName: req.user.username,
     userProfilePic: req.user.profilePicture,
@@ -324,8 +326,8 @@ app.post('/api/posts', async (req, res) => {
     createdAt: new Date()
   };
 
-  const result = await postsCollection.insertOne(newPost);
-  const createdPost = await postsCollection.findOne({ _id: result.insertedId });
+  await postsCollection.insertOne(newPost);
+  const createdPost = await postsCollection.findOne({ _id: postObjectId });
   res.json({ success: true, post: createdPost });
 });
 

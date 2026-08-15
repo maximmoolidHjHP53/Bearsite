@@ -38,11 +38,12 @@
         .post-input-trigger .fake-input { width: 100%; background: #f0f2f5; border-radius: 20px; padding: 10px 15px; color: #65676b; font-size: 15px; cursor: pointer; }
         .post-input-trigger .fake-input:hover { background: #e4e6eb; }
 
-        /* Modals Overlay - Strictly anchored, centered, fixed, non-scrollable background */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 16px; overflow: hidden; }
-        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
-        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 20px; flex-shrink: 0; }
-        .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        /* Fullscreen Modals Overlay - Locked, non-scrollable background */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 1000; flex-direction: column; overflow: hidden; }
+        .modal-content, .friends-modal-content, .profile-modal-content, .options-modal-content, .logout-modal-content { background: white; width: 100% !important; max-width: 100% !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; box-shadow: none !important; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #e4e6eb; font-weight: bold; font-size: 18px; flex-shrink: 0; background: #fff; }
+        .modal-close-btn { background: #e4e6eb; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
         
         .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
         .modal-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -59,35 +60,32 @@
         .preview-grid.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
         .preview-grid img { width: 100%; height: 100%; object-fit: cover; min-height: 130px; max-height: 280px; display: block; }
 
-        .modal-add-box { display: flex; justify-content: space-between; align-items: center; border: 1px solid #e4e6eb; border-radius: 8px; padding: 8px 12px; margin-top: 15px; }
+        .modal-add-box { display: flex; justify-content: space-between; align-items: center; border: 1px solid #e4e6eb; border-radius: 8px; padding: 12px; margin-top: 15px; }
         .modal-add-box span { font-weight: bold; font-size: 14px; color: #050505; }
         .modal-tools { display: flex; gap: 10px; align-items: center; }
         
         .code-upload-label { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #f0f2f5; transition: background 0.2s; }
         .code-upload-label:hover { background: #e4e6eb; }
 
-        .collab-btn { background: #f0f2f5; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #050505; transition: background 0.2s; }
+        .collab-btn { background: #f0f2f5; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #050505; transition: background 0.2s; }
         .collab-btn:hover { background: #e4e6eb; }
 
-        .modal-footer { padding: 12px 16px; border-top: 1px solid #e4e6eb; flex-shrink: 0; }
-        .post-btn { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; text-align: center; }
+        .modal-footer { padding: 16px; border-top: 1px solid #e4e6eb; flex-shrink: 0; background: #fff; }
+        .post-btn { background: #1877f2; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; text-align: center; }
         .post-btn:disabled { background: #e4e6eb; color: #bcc0c4; cursor: not-allowed; }
 
-        .friends-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; max-height: 85vh; }
-        .friend-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
+        .friend-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
         .friend-item:hover { background: #f0f2f5; }
-        .friend-info { display: flex; align-items: center; gap: 10px; }
-        .friend-info img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-        .friend-name { font-weight: bold; font-size: 14px; }
+        .friend-info { display: flex; align-items: center; gap: 12px; }
+        .friend-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .friend-name { font-weight: bold; font-size: 15px; }
 
-        .profile-modal-content { background: white; width: 100%; max-width: 520px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 85vh; }
-        .profile-header-center { display: flex; flex-direction: column; align-items: center; padding: 20px; border-bottom: 1px solid #e4e6eb; text-align: center; background: #fff; flex-shrink: 0; }
-        .profile-header-center img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .profile-header-center h3 { margin: 0 0 4px 0; font-size: 20px; }
-        .profile-header-center p { margin: 0 0 12px 0; font-size: 13px; color: #65676b; }
+        .profile-header-center { display: flex; flex-direction: column; align-items: center; padding: 24px; border-bottom: 1px solid #e4e6eb; text-align: center; background: #fff; flex-shrink: 0; }
+        .profile-header-center img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .profile-header-center h3 { margin: 0 0 4px 0; font-size: 22px; }
+        .profile-header-center p { margin: 0 0 16px 0; font-size: 14px; color: #65676b; }
         .profile-action-btns { display: flex; gap: 10px; justify-content: center; width: 100%; }
-        .btn-add-friend { background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-        .btn-decline-friend { background: #e4e6eb; color: #050505; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-add-friend { background: #1877f2; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 6px; }
         .profile-posts-scroll { padding: 16px; overflow-y: auto; background: #f0f2f5; flex: 1; }
 
         .feed-post { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 16px; padding: 12px 16px; content-visibility: auto; }
@@ -142,14 +140,11 @@
         .reply-input-wrapper { flex: 1; display: flex; align-items: center; background: #f0f2f5; border-radius: 15px; padding-right: 6px; }
         .reply-input-wrapper input { flex: 1; background: none; border: none; padding: 6px 10px; outline: none; font-size: 13px; }
 
-        .options-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; padding: 8px 0; animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        
-        .option-item { padding: 14px 20px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #050505; transition: background 0.15s; }
+        .option-item { padding: 16px 20px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px; color: #050505; border-bottom: 1px solid #f0f2f5; transition: background 0.15s; }
         .option-item:hover { background: #f0f2f5; }
         .option-item.danger { color: #e41e3f; }
 
-        .logout-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; padding: 20px; text-align: center; }
+        .logout-modal-content { padding: 24px; text-align: center; justify-content: center; }
 
         #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; align-items: center; }
         .toast-alert { background: #242526; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 10px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: auto; }
@@ -190,7 +185,7 @@
                         <div id="modal-collab-tag" style="font-size: 13px; color: #65676b; display: none;"></div>
                     </div>
                 </div>
-                <textarea id="modal-post-text" class="modal-textarea" placeholder="What's on your mind?" rows="4" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" name="post_content_unique"></textarea>
+                <textarea id="modal-post-text" class="modal-textarea" placeholder="What's on your mind?" rows="6" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" name="post_content_unique"></textarea>
                 
                 <div id="modal-media-preview"></div>
 
@@ -216,13 +211,13 @@
     <!-- Collab Friends Modal -->
     <div id="collab-friends-modal" class="modal-overlay" onclick="if(event.target === this) closeCollabModal()">
         <div class="friends-modal-content">
-            <div class="modal-header" style="font-size: 16px;">
+            <div class="modal-header">
                 <span>Select Collab Friend</span>
-                <button class="modal-close-btn" style="width: 26px; height: 26px; font-size: 14px;" onclick="closeCollabModal()">×</button>
+                <button class="modal-close-btn" onclick="closeCollabModal()">×</button>
             </div>
-            <div id="friends-list-container" style="max-height: 250px; overflow-y: auto; padding: 4px 0; flex: 1;"></div>
-            <div style="padding: 10px 16px; border-top: 1px solid #e4e6eb; text-align: right; flex-shrink: 0;">
-                <button onclick="closeCollabModal()" style="background: #1877f2; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">Done</button>
+            <div id="friends-list-container" style="overflow-y: auto; flex: 1;"></div>
+            <div style="padding: 16px; border-top: 1px solid #e4e6eb; text-align: right; flex-shrink: 0; background: #fff;">
+                <button onclick="closeCollabModal()" class="post-btn">Done</button>
             </div>
         </div>
     </div>
@@ -247,21 +242,34 @@
     <!-- Post Options (3-Dots) Modal -->
     <div id="post-options-modal" class="modal-overlay" onclick="if(event.target === this) closePostOptionsModal()">
         <div class="options-modal-content">
-            <div class="option-item" onclick="copyPostLink()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete post
+            <div class="modal-header">
+                <span>Post Options</span>
+                <button class="modal-close-btn" onclick="closePostOptionsModal()">×</button>
             </div>
-            <div class="option-item" onclick="closePostOptionsModal()">Cancel</div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="option-item" onclick="copyPostLink()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Copy Link
+                </div>
+                <div class="option-item danger" id="delete-post-option-item" style="display: none;" onclick="deleteCurrentPost()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Post
+                </div>
+            </div>
         </div>
-    </div>
+      </div>
 
     <!-- Logout Settings Modal -->
     <div id="logout-modal" class="modal-overlay" onclick="if(event.target === this) closeLogoutModal()">
         <div class="logout-modal-content">
-            <div style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Logout Settings</div>
-            <p style="color: #65676b; font-size: 14px; margin-bottom: 20px;">Are you sure you want to log out of your Bearsite account?</p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <a href="/auth/logout" class="post-btn" style="text-decoration: none; display: inline-block; background: #e41e3f; line-height: normal;">Confirm Logout</a>
-                <button onclick="closeLogoutModal()" style="background: #e4e6eb; color: #050505; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px;">Cancel</button>
+            <div class="modal-header" style="border: none; justify-content: center; position: relative;">
+                <span>Logout Settings</span>
+                <button class="modal-close-btn" style="position: absolute; right: 16px;" onclick="closeLogoutModal()">×</button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <p style="color: #65676b; font-size: 15px; margin-bottom: 24px;">Are you sure you want to log out of your Bearsite account?</p>
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px;">
+                    <a href="/auth/logout" class="post-btn" style="text-decoration: none; display: inline-block; background: #e41e3f; line-height: normal;">Confirm Logout</a>
+                    <button onclick="closeLogoutModal()" style="background: #e4e6eb; color: #050505; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%;">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -345,7 +353,7 @@
             }
         }
 
-      document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
+        document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
             if (confirm('⚠️ Are you sure you want to completely delete your account and all associated posts/data? This cannot be undone.')) {
                 try {
                     const response = await fetch('/api/account', { method: 'DELETE' });
@@ -376,10 +384,14 @@
             try {
                 const res = await fetch('/api/notifications/count');
                 const data = await res.json();
-                if (data.success && data.count > 0) {
-                    const badge = document.getElementById('notif-badge-count');
-                    badge.textContent = data.count > 99 ? '99+' : data.count;
-                    badge.style.display = 'inline-block';
+                const badge = document.getElementById('notif-badge-count');
+                if (badge) {
+                    if (data.success && data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
                 }
             } catch (err) {
                 console.log("Notification count fetch handled");
@@ -411,7 +423,7 @@
         async function openCollabModal() {
             const friendsModal = document.getElementById('collab-friends-modal');
             const container = document.getElementById('friends-list-container');
-            container.innerHTML = '<div style="padding: 12px; text-align: center; color: #65676b; font-size: 13px;">Loading friends...</div>';
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #65676b; font-size: 14px;">Loading friends...</div>';
             friendsModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
             try {
@@ -425,7 +437,7 @@
                         div.onclick = () => selectCollabFriend(friend);
                         div.innerHTML = `
                             <div class="friend-info">
-                                <img src="${friend.profilePicture || 'https://via.placeholder.com/36'}" alt="Friend">
+                                <img src="${friend.profilePicture || 'https://via.placeholder.com/40'}" alt="Friend">
                                 <span class="friend-name">${friend.username}</span>
                             </div>
                             <input type="radio" name="collab-radio" ${selectedCollabFriend && selectedCollabFriend._id === friend._id ? 'checked' : ''}>
@@ -433,11 +445,11 @@
                         container.appendChild(div);
                     });
                 } else {
-                    container.innerHTML = '<div style="padding: 16px; text-align: center; color: #65676b; font-size: 13px;">No friends yet.</div>';
+                    container.innerHTML = '<div style="padding: 24px; text-align: center; color: #65676b; font-size: 14px;">No friends yet.</div>';
                 }
             } catch (err) {
                 console.error("Error fetching friends", err);
-                container.innerHTML = '<div style="padding: 16px; text-align: center; color: #65676b; font-size: 13px;">No friends yet.</div>';
+                container.innerHTML = '<div style="padding: 24px; text-align: center; color: #65676b; font-size: 14px;">No friends yet.</div>';
             }
         }
 
@@ -454,9 +466,9 @@
             closeCollabModal();
         }
 
-        async function openUserProfileModal(userId, userName, userPic, age, birthday) {
+        function openUserProfileModal(userId, userName, userPic, age, birthday) {
             const modal = document.getElementById('user-profile-modal');
-            document.getElementById('profile-modal-pic').src = userPic || 'https://via.placeholder.com/80';
+            document.getElementById('profile-modal-pic').src = userPic || 'https://via.placeholder.com/90';
             document.getElementById('profile-modal-name').textContent = userName;
             
             let displayAge = (age && age !== 'undefined' && age !== 'null' && age !== 'N/A') ? age : 'N/A';
@@ -464,9 +476,27 @@
             
             document.getElementById('profile-modal-meta').textContent = `Age: ${displayAge} • Birthday: ${displayBirthday}`;
             
-            try {
-                const userRes = await fetch(`/api/users/${userId}`);
-                const userData = await userRes.json();
+            const btnContainer = document.getElementById('profile-action-btns-container');
+            if (userId === currentUser._id) {
+                btnContainer.innerHTML = '';
+            } else {
+                btnContainer.innerHTML = `
+                    <button class="btn-add-friend" onclick="handleFriendAction('${userId}', this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg> Add Friend
+                    </button>
+                `;
+            }
+
+            const postsContainer = document.getElementById('profile-modal-posts');
+            const userPosts = postsCache.filter(p => p.userId === userId);
+            renderProfilePosts(userPosts, postsContainer);
+
+            // Open modal instantly without blocking network delay
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            // Background fetch for up-to-date data sync
+            fetch(`/api/users/${userId}`).then(res => res.json()).then(userData => {
                 if (userData.success && userData.user) {
                     if (userData.user.age !== undefined && userData.user.age !== null) displayAge = userData.user.age;
                     if (userData.user.birthday) displayBirthday = userData.user.birthday;
@@ -474,29 +504,12 @@
                     if (userData.user.profilePicture) document.getElementById('profile-modal-pic').src = userData.user.profilePicture;
                     if (userData.user.username) document.getElementById('profile-modal-name').textContent = userData.user.username;
                 }
-            } catch (e) {
-                console.log("Could not fetch additional user details from database");
-            }
-            
-            const btnContainer = document.getElementById('profile-action-btns-container');
-            if (userId === currentUser._id) {
-                btnContainer.innerHTML = '';
-            } else {
-                btnContainer.innerHTML = `
-                    <button class="btn-add-friend" onclick="handleFriendAction('${userId}', 'add')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg> Add Friend
-                    </button>
-                `;
-            }
+            }).catch(() => {});
+        }
 
-            const postsContainer = document.getElementById('profile-modal-posts');
-            postsContainer.innerHTML = '<div style="text-align: center; color: #65676b; padding: 20px;">Loading posts...</div>';
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-
-            const userPosts = postsCache.filter(p => p.userId === userId);
+        function renderProfilePosts(userPosts, container) {
             if (userPosts.length > 0) {
-                postsContainer.innerHTML = '';
+                container.innerHTML = '';
                 userPosts.forEach(post => {
                     const postDiv = document.createElement('div');
                     postDiv.className = 'feed-post';
@@ -523,10 +536,10 @@
                         <div class="post-body">${post.content}</div>
                         ${mediaHtml}
                     `;
-                    postsContainer.appendChild(postDiv);
+                    container.appendChild(postDiv);
                 });
             } else {
-                postsContainer.innerHTML = '<div style="text-align: center; color: #65676b; padding: 20px;">No posts found for this user.</div>';
+                container.innerHTML = '<div style="text-align: center; color: #65676b; padding: 30px;">No posts found for this user.</div>';
             }
         }
 
@@ -535,8 +548,13 @@
             document.body.style.overflow = 'auto';
         }
 
-        async function handleFriendAction(userId, action) {
+      async function handleFriendAction(userId, btnElement) {
             try {
+                btnElement.disabled = true;
+                btnElement.style.background = '#e4e6eb';
+                btnElement.style.color = '#050505';
+                btnElement.innerHTML = 'Pending';
+
                 const res = await fetch('/api/friends/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -554,9 +572,9 @@
             }
         }
 
-      function openPostOptions(postId, userId) {
+        function openPostOptions(postId, userId) {
             activeOptionsPost = postsCache.find(p => p._id === postId);
-            const deleteOption = document.getElementById('delete-post-option');
+            const deleteOption = document.getElementById('delete-post-option-item');
             
             if (activeOptionsPost && (activeOptionsPost.userId === currentUser._id || userId === currentUser._id)) {
                 deleteOption.style.display = 'flex';
@@ -590,7 +608,7 @@
 
             const loadingOverlay = document.getElementById('loading-overlay');
             const loadingText = document.getElementById('loading-text');
-            loadingText.textContent = 'Deleting post from database...';
+            loadingText.textContent = 'Deleting post...';
             loadingOverlay.style.display = 'flex';
 
             const postId = activeOptionsPost._id;
@@ -649,7 +667,7 @@
             const previewDiv = document.getElementById('modal-media-preview');
             previewDiv.style.display = 'block';
             
-            let html = `<button onclick="clearModalMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; z-index: 10; cursor: pointer;">×</button>`;
+            let html = `<button onclick="clearModalMedia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; z-index: 10; cursor: pointer; font-size: 16px;">×</button>`;
             const count = selectedMediaFiles.length;
             html += `<div class="preview-grid grid-${count}">`;
             selectedMediaFiles.forEach(file => {
@@ -711,7 +729,7 @@
             }
         }
 
-        async function loadPosts() {
+      async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
                 const data = await res.json();
@@ -748,7 +766,7 @@
                     authorText += ` is collaborating with ${post.collabWithName}`;
                 }
 
-              let commentsHtml = '';
+                let commentsHtml = '';
                 if (post.comments) {
                     post.comments.forEach(comment => {
                         let repliesHtml = '';
@@ -890,7 +908,7 @@
                 replies: []
             };
 
-            if (!post.comments) post.comments = [];
+          if (!post.comments) post.comments = [];
             post.comments.push(tempComment);
 
             const commentsList = document.getElementById(`comments-list-${postId}`);
@@ -915,7 +933,7 @@
                     </div>
                 </div>
             `;
-          commentsList.appendChild(commentDiv);
+            commentsList.appendChild(commentDiv);
 
             const countSpan = document.querySelector(`[id='comment-count-${postId}']`);
             if (countSpan) countSpan.textContent = post.comments.length;
@@ -1014,3 +1032,7 @@
     </script>
 </body>
 </html>
+
+
+      
+  
